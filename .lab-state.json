@@ -2,5 +2,13 @@
   "repo": "metjuperry/alm-lab",
   "randomIdentifier": 3757,
   "txcAuth": "admin@ngtraining1.onmicrosoft.com",
-  "tenantId": "957a313a-971b-4add-b513-038b581bc3e7"
+  "tenantId": "957a313a-971b-4add-b513-038b581bc3e7",
+  "devEnvName": "Warehouse dev 3757",
+  "devEnvDomain": "wm-dev-3757",
+  "devEnvUrl": "https://wm-dev-3757.crm4.dynamics.com",
+  "devProfile": "dev",
+  "testEnvName": "Warehouse test 3757",
+  "testEnvDomain": "wm-test-3757",
+  "testEnvUrl": "https://wm-test-3757.crm4.dynamics.com",
+  "testProfile": "test"
 }
