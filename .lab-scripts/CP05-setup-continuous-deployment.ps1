@@ -39,6 +39,17 @@ Write-Ok "Azure: tenant $tenantId"
 $appName = "wm-deploy-$rid"
 Set-LabValue 'appName' $appName
 $appId = Get-LabValue 'appId'
+
+# A previously saved appId can belong to a deleted app or a different tenant.
+# Validate it first so Dataverse does not fail later with "application ID not found".
+if ($appId) {
+    $resolvedAppId = az ad app show --id $appId --query appId -o tsv 2>$null
+    if (-not $resolvedAppId) {
+        Write-Info "Saved appId not found in current tenant; creating a new app registration..."
+        $appId = $null
+    }
+}
+
 if (-not $appId) {
     $appId = az ad app list --display-name $appName --query "[0].appId" -o tsv 2>$null
     if (-not $appId) {
@@ -50,6 +61,21 @@ if (-not $appId) {
     }
 }
 Set-LabValue 'appId' $appId
+
+# Entra objects can take a short time to replicate; wait until the app is resolvable.
+$appReady = $false
+for ($i = 0; $i -lt 12; $i++) {
+    if (az ad app show --id $appId --query appId -o tsv 2>$null) {
+        $appReady = $true
+        break
+    }
+    Start-Sleep -Seconds 5
+}
+if (-not $appReady) {
+    Write-Err "App registration $appId is not yet visible in Entra ID. Re-run CP05 in ~1 minute."
+    exit 1
+}
+
 $appObjectId = az ad app show --id $appId --query id -o tsv 2>$null
 if ($appObjectId) { Set-LabValue 'appObjectId' $appObjectId }
 $servicePrincipalObjectId = az ad sp show --id $appId --query id -o tsv 2>$null
