@@ -13,7 +13,10 @@
 # Both tracks write the identical .lab-state.json keys and leave the identical local txc
 # profiles ('dev'/'test'), so CP06 onward runs completely unmodified either way. Both tracks
 # also reuse the SAME checkpoint id ('cp04') as the original, so lab-status.ps1 and any
-# 'git tag cp04' based rollback keep working with zero changes to either.
+# 'git tag cp04' based rollback keep working with zero changes to either. One deliberate
+# extra: this track also applies infra/groups/terraform and puts Dev + Test in the resulting
+# "Warehouse Lab Environments" group (a 'groupId' lab-state key that only this track writes)
+# — CP04 (imperative) has no equivalent grouping step.
 #
 # Run:  .lab-scripts/CP04b-setup-runtime-terraform.ps1
 # ──────────────────────────────────────────────────────────────────────────────────────────
@@ -24,7 +27,8 @@ $ErrorActionPreference = "Stop"
 Write-Step "CP04b — Runtime environments (Dev + Test) via Terraform"
 
 $rid = Initialize-RandomIdentifier
-$tfEnvDir = Join-Path $LabRoot "infra/environments/terraform"
+$tfEnvDir    = Join-Path $LabRoot "infra/environments/terraform"
+$tfGroupsDir = Join-Path $LabRoot "infra/groups/terraform"
 
 # Same helper CP04 uses to bind an existing txc credential to a connection by id/url without
 # creating a duplicate. Duplicated here (not hoisted into Lab.Common.ps1) so this file stays
@@ -102,11 +106,30 @@ if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in infra/environment
 # scope for the lab) — but it also won't try to create a second Dataverse environment.
 $needsApply = (-not (Get-LabValue 'devEnvUrl')) -or (-not (Get-LabValue 'testEnvUrl'))
 if ($needsApply) {
+    # Step 3a: Environment group — infra/groups/terraform creates "Warehouse Lab
+    # Environments" so Dev + Test land in it instead of ungrouped, the way the group's own
+    # description already says they should. Scoped to $needsApply (not run on every CP04b
+    # invocation) on purpose: once Dev/Test exist, changing environment_group_id would be a
+    # real mutation of a live environment, not something a routine re-run of this script
+    # should trigger as a side effect.
+    Write-Info "Provisioning environment group via infra/groups/terraform..."
+    terraform "-chdir=$tfGroupsDir" init -input=false 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in infra/groups/terraform"; exit 1 }
+    terraform "-chdir=$tfGroupsDir" apply -auto-approve -input=false 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Err "terraform apply failed in infra/groups/terraform"; exit 1 }
+    $groupOutputJson = terraform "-chdir=$tfGroupsDir" output -json
+    if ($LASTEXITCODE -ne 0 -or -not $groupOutputJson) { Write-Err "Could not read terraform output from infra/groups/terraform"; exit 1 }
+    $groupId = ($groupOutputJson | ConvertFrom-Json).group_ids.value.workshop_environments
+    if (-not $groupId) { Write-Err "groups/terraform apply succeeded but produced no workshop_environments group id"; exit 1 }
+    Set-LabValue 'groupId' $groupId
+    Write-Ok "Environment group: Warehouse Lab Environments ($groupId)"
+
     Write-Info "Provisioning Dev + Test via Terraform (infra/environments/terraform)..."
     foreach ($key in @('dev', 'test')) {
         $configPath = Join-Path $tfEnvDir "$key/config.yml"
-        (Get-Content -Raw -LiteralPath $configPath) -replace '<rid>', $rid |
-            Set-Content -LiteralPath $configPath -Encoding UTF8 -NoNewline
+        $config = (Get-Content -Raw -LiteralPath $configPath) -replace '<rid>', $rid
+        $config = $config -replace 'environment_group_id:.*', "environment_group_id: `"$groupId`" # set automatically by CP04b (infra/groups/terraform output)"
+        $config | Set-Content -LiteralPath $configPath -Encoding UTF8 -NoNewline
     }
     terraform "-chdir=$tfEnvDir" apply -auto-approve -input=false
     if ($LASTEXITCODE -ne 0) { Write-Err "terraform apply failed in infra/environments/terraform"; exit 1 }
@@ -169,7 +192,8 @@ Save-Checkpoint -Id "cp04" -Message "Provision Dev and Test Dataverse sandbox en
 Create dedicated Dev and Test Dataverse sandboxes so the warehouse app can be built and validated in isolated environments — declaratively, via infra/environments/terraform, as an alternative to CP04's imperative txc calls. The script also wires local txc profiles to both environments for repeatable deployments.
 
 ## Changes
-- provision Dev and Test sandbox environments with unique domains via Terraform
+- provision the "Warehouse Lab Environments" group via infra/groups/terraform
+- provision Dev and Test sandbox environments with unique domains via Terraform, placed in that group
 - create txc connections and profiles for both environments
 - select the dev profile as the default local deployment target
 ## Testing

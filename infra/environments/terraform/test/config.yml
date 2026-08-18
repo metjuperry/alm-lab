@@ -2,7 +2,7 @@ display_name: "Warehouse test 6491"
 location: "europe"
 environment_type: "Sandbox"
 description: "Illustrative example — Test sandbox for the warehouse app (see .lab-state.json / CP04 for the real, script-provisioned environment)."
-environment_group_id: "" # paste module.workshop_environments.id from groups/terraform output
+environment_group_id: "" # set automatically by CP04b (infra/groups/terraform output) when it first provisions this environment
 deployment_principal_id: "e1847896-9650-4bf7-945c-c0103656bc39"
 dataverse:
   language_code: "1033"
