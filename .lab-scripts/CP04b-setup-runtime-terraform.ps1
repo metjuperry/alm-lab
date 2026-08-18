@@ -5,7 +5,7 @@
 # ╚════════════════════════════════════════════════════════════════════════════════════════╝
 #
 # Alternative to CP04-setup-runtime.ps1: provisions the same Dev + Test Dataverse sandbox
-# environments, but declaratively via .infra/environments/terraform instead of imperative
+# environments, but declaratively via infra/environments/terraform instead of imperative
 # 'txc env create' calls. This is a paired alternative track — run CP04+CP05 (imperative) OR
 # CP04b+CP05b (Terraform), not a mix. CP05b hard-fails if it can't find CP04b's Terraform
 # state, so running CP04 (imperative) and then CP05b won't silently do the wrong thing.
@@ -24,7 +24,7 @@ $ErrorActionPreference = "Stop"
 Write-Step "CP04b — Runtime environments (Dev + Test) via Terraform"
 
 $rid = Initialize-RandomIdentifier
-$tfEnvDir = Join-Path $LabRoot ".infra/environments/terraform"
+$tfEnvDir = Join-Path $LabRoot "infra/environments/terraform"
 
 # Same helper CP04 uses to bind an existing txc credential to a connection by id/url without
 # creating a duplicate. Duplicated here (not hoisted into Lab.Common.ps1) so this file stays
@@ -41,7 +41,7 @@ function Get-ConnectionByIdOrUrl {
         Select-Object -First 1
 }
 
-# .infra/*.tf files are scaffold-owned and intentionally left unmodified by this script, so
+# infra/*.tf files are scaffold-owned and intentionally left unmodified by this script, so
 # there are no 'output' blocks to read devEnvUrl/devEnvId/devOrgId etc. from. Read them
 # straight out of Terraform's own state instead, via 'show -json' (a stable, documented
 # format) — this needs no changes to the module and works the same whether the resource was
@@ -64,7 +64,7 @@ function Get-TfResourceValues {
 
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would run 'terraform apply' against"
-    Write-Info "  .infra/environments/terraform to provision real Dev + Test Dataverse"
+    Write-Info "  infra/environments/terraform to provision real Dev + Test Dataverse"
     Write-Info "  sandbox environments. Stubbing devEnvUrl/testEnvUrl with unreachable"
     Write-Info "  placeholder URLs so later checkpoints that only check for their presence"
     Write-Info "  can still run."
@@ -88,7 +88,7 @@ Write-Ok "Authenticated as $auth"
 # .terraform/ directory is gitignored (unlike .lab-state.json) so a fresh checkout or a new
 # machine/session won't have it even if this checkpoint already ran elsewhere.
 terraform "-chdir=$tfEnvDir" init -input=false 2>&1 | Out-Null
-if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in .infra/environments/terraform"; exit 1 }
+if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in infra/environments/terraform"; exit 1 }
 
 # Step 3: Apply only if we don't already have both URLs — Dataverse sandbox creation takes
 # several minutes, so skip it outright once lab-state says it's done (mirrors CP04's own
@@ -102,14 +102,14 @@ if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in .infra/environmen
 # scope for the lab) — but it also won't try to create a second Dataverse environment.
 $needsApply = (-not (Get-LabValue 'devEnvUrl')) -or (-not (Get-LabValue 'testEnvUrl'))
 if ($needsApply) {
-    Write-Info "Provisioning Dev + Test via Terraform (.infra/environments/terraform)..."
+    Write-Info "Provisioning Dev + Test via Terraform (infra/environments/terraform)..."
     foreach ($key in @('dev', 'test')) {
         $configPath = Join-Path $tfEnvDir "$key/config.yml"
         (Get-Content -Raw -LiteralPath $configPath) -replace '<rid>', $rid |
             Set-Content -LiteralPath $configPath -Encoding UTF8 -NoNewline
     }
     terraform "-chdir=$tfEnvDir" apply -auto-approve -input=false
-    if ($LASTEXITCODE -ne 0) { Write-Err "terraform apply failed in .infra/environments/terraform"; exit 1 }
+    if ($LASTEXITCODE -ne 0) { Write-Err "terraform apply failed in infra/environments/terraform"; exit 1 }
 }
 
 # Step 4: For each environment, prefer the URL lab-state already has (works even if this
@@ -166,7 +166,7 @@ Write-Ok "Active profile: dev"
 }
 
 Save-Checkpoint -Id "cp04" -Message "Provision Dev and Test Dataverse sandbox environments (Terraform)" -Body @'
-Create dedicated Dev and Test Dataverse sandboxes so the warehouse app can be built and validated in isolated environments — declaratively, via .infra/environments/terraform, as an alternative to CP04's imperative txc calls. The script also wires local txc profiles to both environments for repeatable deployments.
+Create dedicated Dev and Test Dataverse sandboxes so the warehouse app can be built and validated in isolated environments — declaratively, via infra/environments/terraform, as an alternative to CP04's imperative txc calls. The script also wires local txc profiles to both environments for repeatable deployments.
 
 ## Changes
 - provision Dev and Test sandbox environments with unique domains via Terraform
