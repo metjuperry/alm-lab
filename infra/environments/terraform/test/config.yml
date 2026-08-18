@@ -1,13 +1,13 @@
-display_name: "Warehouse test <rid>"
+display_name: "Warehouse test 6491"
 location: "europe"
 environment_type: "Sandbox"
 description: "Illustrative example — Test sandbox for the warehouse app (see .lab-state.json / CP04 for the real, script-provisioned environment)."
 environment_group_id: "" # paste module.workshop_environments.id from groups/terraform output
-deployment_principal_id: "TODO-CHANGE-ME" # paste `client_id` output from identity/terraform
+deployment_principal_id: "" # paste `client_id` output from identity/terraform (set automatically by CP05b)
 dataverse:
   language_code: "1033"
   currency_code: "EUR"
-  domain: "wm-test-<rid>"
+  domain: "wm-test-6491"
 security_teams: []
 environment_settings:
   audit_and_logs:
