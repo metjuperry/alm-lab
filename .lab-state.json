@@ -7,5 +7,13 @@
   "publisherPrefix": "almlab",
   "repo": "metjuperry/alm-lab",
   "mainRulesetId": 20989113,
-  "mainRulesetName": "alm-lab-main-protection"
+  "mainRulesetName": "alm-lab-main-protection",
+  "devEnvUrl": "https://wm-dev-6491.crm4.dynamics.com/",
+  "devEnvId": "fa0fcb7f-c354-e2e5-8eb5-22d195a4415a",
+  "devOrgId": "40380239-009b-f111-9969-000d3ade384e",
+  "devProfile": "dev",
+  "testEnvUrl": "https://wm-test-6491.crm4.dynamics.com/",
+  "testEnvId": "88d19029-631f-ebdb-8ea9-b1842212be4a",
+  "testOrgId": "41380239-009b-f111-9969-000d3ade3848",
+  "testProfile": "test"
 }

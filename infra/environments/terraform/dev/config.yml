@@ -1,13 +1,13 @@
-display_name: "Warehouse dev <rid>"
+display_name: "Warehouse dev 6491"
 location: "europe"
 environment_type: "Sandbox"
-description: "Illustrative example — Dev sandbox for the warehouse app (see .lab-state.json / CP04 for the real, script-provisioned environment). Replace <rid> with your actual random identifier if you ever wire this up."
+description: "Illustrative example — Dev sandbox for the warehouse app (see .lab-state.json / CP04 for the real, script-provisioned environment). Replace 6491 with your actual random identifier if you ever wire this up."
 environment_group_id: "" # paste module.workshop_environments.id from groups/terraform output
 deployment_principal_id: "" # CP05 only registers the CD principal in Test, so Dev has no app user by default
 dataverse:
   language_code: "1033"
   currency_code: "EUR"
-  domain: "wm-dev-<rid>"
+  domain: "wm-dev-6491"
 security_teams: []
 environment_settings:
   audit_and_logs:
