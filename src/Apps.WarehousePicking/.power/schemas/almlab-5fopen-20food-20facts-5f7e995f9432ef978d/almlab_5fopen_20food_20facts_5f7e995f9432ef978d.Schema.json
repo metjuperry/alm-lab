@@ -1,0 +1,203 @@
+{
+  "name": "shared_almlab-5fopen-20food-20facts-5f7e995f9432ef978d",
+  "id": "/providers/Microsoft.PowerApps/apis/shared_almlab-5fopen-20food-20facts-5f7e995f9432ef978d",
+  "type": "Microsoft.PowerApps/apis",
+  "properties": {
+    "xrmConnectorId": "a01c544e-0ace-3b06-93ac-d1708abb3e94",
+    "displayName": "Open Food Facts",
+    "iconUri": "https://defaulticons.powerapps.com/defaulticons/api-dedicated.png",
+    "iconBrandColor": "#007ee5",
+    "contact": {},
+    "license": {},
+    "apiEnvironment": "Shared",
+    "isCustomApi": true,
+    "blobUrisAreProxied": false,
+    "connectionParameters": {},
+    "swagger": {
+      "swagger": "2.0",
+      "info": {
+        "title": "Open Food Facts",
+        "description": "Look up product data (name, brand, quantity, image) by barcode from the Open Food Facts public database. No API key required.",
+        "version": "1.0"
+      },
+      "host": "382f14832a69e4b883d5c8fd8e3c22.50.environment.api.powerplatform.com",
+      "basePath": "/connectors/runtime/invoke/scalegroups/europe002/shards/06/apis/almlab-5fopen-20food-20facts-5f7e995f9432ef978d/connections/",
+      "schemes": [
+        "https"
+      ],
+      "consumes": [],
+      "produces": [
+        "application/json"
+      ],
+      "paths": {
+        "/{connectionId}/product/{barcode}.json": {
+          "get": {
+            "summary": "Get product by barcode",
+            "description": "Looks up a product by its EAN/UPC barcode and returns its name, brand, quantity, and image URL.",
+            "operationId": "GetProductByBarcode",
+            "x-ms-visibility": "important",
+            "parameters": [
+              {
+                "name": "connectionId",
+                "in": "path",
+                "required": true,
+                "x-ms-visibility": "internal",
+                "type": "string"
+              },
+              {
+                "name": "barcode",
+                "in": "path",
+                "required": true,
+                "type": "string",
+                "description": "The product's EAN-13 or UPC-A barcode.",
+                "x-ms-summary": "Barcode"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Product found",
+                "schema": {
+                  "$ref": "#/definitions/Product"
+                }
+              }
+            }
+          }
+        },
+        "/{connectionId}/product-image": {
+          "get": {
+            "summary": "Get product image",
+            "description": "Proxies the bytes of an image URL (as returned by GetProductByBarcode) through the connector's own server-side code, for callers that can't load the external URL directly.",
+            "operationId": "GetProductImage",
+            "x-ms-visibility": "important",
+            "parameters": [
+              {
+                "name": "connectionId",
+                "in": "path",
+                "required": true,
+                "x-ms-visibility": "internal",
+                "type": "string"
+              },
+              {
+                "name": "imageUrl",
+                "in": "query",
+                "required": true,
+                "type": "string",
+                "description": "The image URL returned by GetProductByBarcode.",
+                "x-ms-summary": "Image URL"
+              }
+            ],
+            "produces": [
+              "image/jpeg",
+              "image/png"
+            ],
+            "responses": {
+              "200": {
+                "description": "Image bytes",
+                "schema": {
+                  "type": "file"
+                }
+              }
+            },
+            "x-ms-media-kind": "image"
+          }
+        }
+      },
+      "definitions": {
+        "Product": {
+          "type": "object",
+          "properties": {
+            "ean": {
+              "type": "string",
+              "description": "The barcode that was looked up.",
+              "x-ms-summary": "EAN"
+            },
+            "name": {
+              "type": "string",
+              "description": "The product's name.",
+              "x-ms-summary": "Name"
+            },
+            "brand": {
+              "type": "string",
+              "description": "The product's brand.",
+              "x-ms-summary": "Brand"
+            },
+            "quantity": {
+              "type": "string",
+              "description": "The product's package quantity, e.g. '750g' or '1L'. Free text, not a number - Open Food Facts does not normalize units.",
+              "x-ms-summary": "Quantity"
+            },
+            "imageUrl": {
+              "type": "string",
+              "description": "URL of the product's front-of-pack image.",
+              "x-ms-summary": "Image URL"
+            }
+          }
+        }
+      }
+    },
+    "runtimeUrls": [
+      "https://382f14832a69e4b883d5c8fd8e3c22.50.environment.api.powerplatform.com/connectors/runtime/invoke/scalegroups/europe002/shards/06/apis/almlab-5fopen-20food-20facts-5f7e995f9432ef978d/connections/"
+    ],
+    "primaryRuntimeUrl": "https://382f14832a69e4b883d5c8fd8e3c22.50.environment.api.powerplatform.com/connectors/runtime/invoke/scalegroups/europe002/shards/06/apis/almlab-5fopen-20food-20facts-5f7e995f9432ef978d/connections/",
+    "doNotUseApiHubNetRuntimeUrl": "https://382f1483-2a69-e4b8-83d5-c8fd8e3c2250.06.custom.europe002.azure-apihub.net/apim/almlab-5fopen-20food-20facts-5f7e995f9432ef978d",
+    "metadata": {
+      "source": "powerapps-user-defined",
+      "brandColor": "#007ee5",
+      "contact": {},
+      "license": {},
+      "publisherUrl": null,
+      "serviceUrl": null,
+      "documentationUrl": null,
+      "environmentName": "382f1483-2a69-e4b8-83d5-c8fd8e3c2250",
+      "xrmConnectorId": "a01c544e-0ace-3b06-93ac-d1708abb3e94",
+      "almMode": "Solution",
+      "parameters": {},
+      "useNewApimVersion": "True",
+      "createdBy": "{\"id\":\"9fe11834-e8c9-4387-9854-2aad4296e231\",\"displayName\":\"Admin\",\"type\":\"User\",\"userType\":\"NotSpecified\",\"tenantId\":\"957a313a-971b-4add-b513-038b581bc3e7\",\"userPrincipalName\":\"admin@ngtraining1.onmicrosoft.com\"}",
+      "modifiedBy": "{\"id\":\"9fe11834-e8c9-4387-9854-2aad4296e231\",\"displayName\":\"Admin\",\"type\":\"User\",\"userType\":\"NotSpecified\",\"tenantId\":\"957a313a-971b-4add-b513-038b581bc3e7\",\"userPrincipalName\":\"admin@ngtraining1.onmicrosoft.com\"}",
+      "allowSharing": false
+    },
+    "capabilities": [
+      "actions"
+    ],
+    "description": "Look up product data (name, brand, quantity, image) by barcode from the Open Food Facts public database. No API key required.",
+    "apiDefinitions": {
+      "originalSwaggerUrl": "https://eur002002neuext.blob.core.windows.net/api-swagger-files/europe-002/almlab-5fopen-20food-20facts-5f7e995f9432ef978d.json_original?skoid=a18ce847-5bbf-4179-b6dd-1aa1cb321bd0&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skt=2026-09-22T02%3A08%3A21Z&ske=2026-09-23T02%3A08%3A21Z&sks=b&skv=2025-01-05&sv=2025-01-05&spr=https&se=2026-09-22T14%3A30%3A41Z&sr=b&sp=r&sig=jMAqWJJ%2BWc8PZNz45j%2FAZDM%2FlFbu%2FIOvkPkab0ivSO8%3D",
+      "modifiedSwaggerUrl": "https://eur002002neuext.blob.core.windows.net/api-swagger-files/europe-002/almlab-5fopen-20food-20facts-5f7e995f9432ef978d.json?skoid=a18ce847-5bbf-4179-b6dd-1aa1cb321bd0&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skt=2026-09-22T02%3A08%3A21Z&ske=2026-09-23T02%3A08%3A21Z&sks=b&skv=2025-01-05&sv=2025-01-05&spr=https&se=2026-09-22T14%3A30%3A41Z&sr=b&sp=r&sig=Nfdw5lyQAPWj65GB37T6AuqfG%2FpU3ouY0I%2FRKbUdPQ4%3D"
+    },
+    "policyTemplateInstances": [],
+    "backendService": {
+      "serviceUrl": "https://world.openfoodfacts.org/api/v2"
+    },
+    "createdBy": {
+      "id": "9fe11834-e8c9-4387-9854-2aad4296e231",
+      "displayName": "Admin",
+      "type": "User",
+      "userType": "NotSpecified",
+      "tenantId": "957a313a-971b-4add-b513-038b581bc3e7",
+      "userPrincipalName": "admin@ngtraining1.onmicrosoft.com"
+    },
+    "modifiedBy": {
+      "id": "9fe11834-e8c9-4387-9854-2aad4296e231",
+      "displayName": "Admin",
+      "type": "User",
+      "userType": "NotSpecified",
+      "tenantId": "957a313a-971b-4add-b513-038b581bc3e7",
+      "userPrincipalName": "admin@ngtraining1.onmicrosoft.com"
+    },
+    "createdTime": "2026-09-22T13:10:45.1277209Z",
+    "changedTime": "2026-09-22T13:10:45.1277209Z",
+    "environment": {
+      "id": "/providers/Microsoft.PowerApps/environments/382f1483-2a69-e4b8-83d5-c8fd8e3c2250",
+      "name": "382f1483-2a69-e4b8-83d5-c8fd8e3c2250"
+    },
+    "tier": "Standard",
+    "publisher": "Admin",
+    "almMode": "Solution",
+    "scriptDefinitionUrl": "https://eur002002neuext.blob.core.windows.net/api-swagger-files/europe-002/almlab-5fopen-20food-20facts-5f7e995f9432ef978d-script.json?skoid=a18ce847-5bbf-4179-b6dd-1aa1cb321bd0&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skt=2026-09-22T02%3A08%3A21Z&ske=2026-09-23T02%3A08%3A21Z&sks=b&skv=2025-01-05&sv=2025-01-05&spr=https&se=2026-09-22T14%3A30%3A41Z&sr=b&sp=r&sig=%2BGNCtdrqqpLxgE8%2Bi1BGgw473p%2BJqKXvtbbvS%2FNqL74%3D",
+    "scriptOperations": [],
+    "parameters": {},
+    "rateLimit": 0,
+    "apiVersion": "None"
+  }
+}

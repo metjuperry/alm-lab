@@ -8,35 +8,42 @@ import type { Product } from '../models/OpenFoodFactsModel';
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
 import { getClient } from '@microsoft/power-apps/data';
 
-
 export class OpenFoodFactsService {
-  private static readonly dataSourceName = 'OpenFoodFacts';
+  private static readonly dataSourceName = 'almlab_5fopen_20food_20facts_5f7e995f9432ef978d';
 
   private static readonly client = getClient(dataSourcesInfo);
 
+  /**
+   * Get product by barcode
+   * Looks up a product by its EAN/UPC barcode and returns its name, brand, quantity, and image URL.
+   */
   public static async GetProductByBarcode(barcode: string): Promise<IOperationResult<Product>> {
-    const result = await OpenFoodFactsService.client.executeAsync<{ barcode: string }, Product>({
-      connectorOperation: {
-        tableName: OpenFoodFactsService.dataSourceName,
-        operationName: 'GetProductByBarcode',
-        parameters: { barcode },
-      },
-    });
+    const params: { barcode: string } = { barcode };
+    const result = await OpenFoodFactsService.client.executeAsync<{ barcode: string }, Product>(
+      {
+        connectorOperation: {
+          tableName: OpenFoodFactsService.dataSourceName,
+          operationName: 'GetProductByBarcode',
+          parameters: params
+        },
+      });
     return result;
   }
 
-  // The swagger exposes a second operation, GetProductImage, which proxies the image bytes
-  // through the connector's own server-side code - the browser cannot fetch the Open Food
-  // Facts image URL directly. Typed as unknown because the transport hands back a base64
-  // string, an ArrayBuffer or a Uint8Array depending on the runtime; the caller normalises.
+  /**
+   * Get product image
+   * Proxies the bytes of an image URL (as returned by GetProductByBarcode) through the connector's own server-side code, for callers that can't load the external URL directly.
+   */
   public static async GetProductImage(imageUrl: string): Promise<IOperationResult<unknown>> {
-    const result = await OpenFoodFactsService.client.executeAsync<{ imageUrl: string }, unknown>({
-      connectorOperation: {
-        tableName: OpenFoodFactsService.dataSourceName,
-        operationName: 'GetProductImage',
-        parameters: { imageUrl },
-      },
-    });
+    const params: { imageUrl: string } = { imageUrl };
+    const result = await OpenFoodFactsService.client.executeAsync<{ imageUrl: string }, unknown>(
+      {
+        connectorOperation: {
+          tableName: OpenFoodFactsService.dataSourceName,
+          operationName: 'GetProductImage',
+          parameters: params
+        },
+      });
     return result;
   }
 }

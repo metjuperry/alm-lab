@@ -4,10 +4,14 @@
  */
 
 export interface Product {
+  // The barcode that was looked up.
   ean?: string;
+  // The product's name.
   name?: string;
+  // The product's brand.
   brand?: string;
+  // The product's package quantity, e.g. '750g' or '1L'. Free text, not a number - Open Food Facts does not normalize units.
   quantity?: string;
+  // URL of the product's front-of-pack image.
   imageUrl?: string;
 }
-

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasApp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>almlab_warehousepicking</Name>
-  <AppVersion>2026-09-22T13:18:45Z</AppVersion>
+  <AppVersion>2026-09-22T13:33:50Z</AppVersion>
   <Status>Ready</Status>
   <CreatedByClientVersion>0.0.0.0</CreatedByClientVersion>
   <MinClientVersion>0.0.0.0</MinClientVersion>
@@ -14,7 +14,7 @@
   <CommitMessage xsi:nil="true"></CommitMessage>
   <Publisher xsi:nil="true"></Publisher>
   <AuthorizationReferences>[]</AuthorizationReferences>
-  <ConnectionReferences>{}</ConnectionReferences>
+  <ConnectionReferences>{"7a0417b2-7bce-4521-83ff-3530b0826ffc":{"id":"/providers/Microsoft.PowerApps/apis/shared_almlab-5fopen-20food-20facts-5f7e995f9432ef978d","displayName":"Open Food Facts","dataSources":["almlab_5fopen_20food_20facts_5f7e995f9432ef978d"],"dataSets":{}}}</ConnectionReferences>
   <DatabaseReferences>{"default.cds":{"databaseDetails":{"referenceType":"Environmental","environmentName":"default.cds","overrideValues":{"status":"NotSpecified","environmentVariableName":""}},"dataSources":{"warehouseitems":{"entitySetName":"almlab_warehouseitems","logicalName":"almlab_warehouseitem"},"warehousetransactions":{"entitySetName":"almlab_warehousetransactions","logicalName":"almlab_warehousetransaction"},"warehouselocations":{"entitySetName":"almlab_warehouselocations","logicalName":"almlab_warehouselocation"},"products":{"entitySetName":"almlab_products","logicalName":"almlab_product"}}}}</DatabaseReferences>
   <AppComponents>[]</AppComponents>
   <AppComponentDependencies>[]</AppComponentDependencies>
@@ -29,7 +29,7 @@
   <CodeAppPackageUris>
     <CodeAppPackageUri>/CanvasApps/almlab_warehousepicking_CodeAppPackages/index.html_ContentType_text/html</CodeAppPackageUri>
     <CodeAppPackageUri>/CanvasApps/almlab_warehousepicking_CodeAppPackages/power-apps.svg_ContentType_image/svg+xml</CodeAppPackageUri>
-    <CodeAppPackageUri>/CanvasApps/almlab_warehousepicking_CodeAppPackages/assets/index-B9cEb5b2.js_ContentType_application/javascript</CodeAppPackageUri>
+    <CodeAppPackageUri>/CanvasApps/almlab_warehousepicking_CodeAppPackages/assets/index-DldfTYzu.js_ContentType_application/javascript</CodeAppPackageUri>
     <CodeAppPackageUri>/CanvasApps/almlab_warehousepicking_CodeAppPackages/assets/index-CZXcDTfi.css_ContentType_text/css</CodeAppPackageUri>
   </CodeAppPackageUris>
 </CanvasApp>
