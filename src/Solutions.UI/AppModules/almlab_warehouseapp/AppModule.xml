@@ -18,6 +18,7 @@
     <AppModuleComponent type="60" id="{0ed84eae-03d3-43ec-9cc1-62acf1896c7d}" />
     <AppModuleComponent type="60" id="{85437b6c-8532-435f-85d1-0b91a9be665c}" />
     <AppModuleComponent type="60" id="{cec239bf-f97a-4dc5-82bc-8077149f8f2e}" />
+    <AppModuleComponent type="1" schemaName="almlab_product" />
   </AppModuleComponents>
   <AppModuleRoleMaps>
     <Role id="{979144c2-989b-41a5-a146-6b3ea4130e8c}" />
