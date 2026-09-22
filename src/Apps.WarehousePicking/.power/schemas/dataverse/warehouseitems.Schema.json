@@ -53,7 +53,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "95b95e11-215f-4eb5-8c36-70178758182f",
+          "x-ms-optionsetmetadataid": "6cb45917-f219-49b5-8235-f30fbe842f73",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Category",
           "x-ms-optionSetType": "Picklist"
@@ -111,6 +111,22 @@
           "x-ms-schema-name": "almlab_name",
           "x-ms-dataverse-primary-name": true,
           "required": true,
+          "maxLength": 100
+        },
+        "almlab_productid": {
+          "type": "string",
+          "title": "Product",
+          "x-ms-dataverse-attribute": "almlab_productid",
+          "x-ms-dataverse-type": "LookupType",
+          "x-ms-schema-name": "almlab_productid"
+        },
+        "almlab_productidname": {
+          "type": "string",
+          "title": "almlab_productidname",
+          "x-ms-dataverse-attribute": "almlab_productidname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "almlab_productidName",
+          "x-ms-read-only": true,
           "maxLength": 100
         },
         "almlab_reorderpoint": {
@@ -396,7 +412,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "e3562695-6cbf-4feb-83cd-4b7685a6ae3b",
+          "x-ms-optionsetmetadataid": "c5400672-1b0b-43ad-80f2-7118eb60b618",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Status",
           "x-ms-optionSetType": "State"
@@ -427,7 +443,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "061ec78d-543b-453a-9bf6-046eb91b23af",
+          "x-ms-optionsetmetadataid": "32664ae7-0245-40eb-8181-b78bac39fcf1",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Status Reason",
           "x-ms-optionSetType": "Status"
