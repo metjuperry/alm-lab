@@ -9,7 +9,16 @@
   "buildEntryPoint": "index.html",
   "localAppUrl": "http://localhost:3000",
   "logoPath": "Default",
-  "connectionReferences": {},
+  "connectionReferences": {
+    "7a0417b2-7bce-4521-83ff-3530b0826ffc": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_almlab-5fopen-20food-20facts-5f7e995f9432ef978d",
+      "displayName": "Open Food Facts",
+      "dataSources": [
+        "almlab_5fopen_20food_20facts_5f7e995f9432ef978d"
+      ],
+      "dataSets": {}
+    }
+  },
   "databaseReferences": {
     "default.cds": {
       "dataSources": {
