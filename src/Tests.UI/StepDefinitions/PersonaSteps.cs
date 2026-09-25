@@ -7,8 +7,8 @@ namespace Tests.UI.StepDefinitions;
 /// "Given I am a warehouse manager" - the phrasing the design documents use.
 /// </summary>
 /// <remarks>
-/// design/features/*.feature name their actors the way design/personas.md does, as a role in a
-/// sentence rather than a quoted argument. One regex binding covers every persona in that cast,
+/// Design-generated .feature files name their actors the way design/SPECIFICATION.md does, as a
+/// role in a sentence rather than a quoted argument. One regex binding covers that whole cast,
 /// so a new persona needs a .env entry and nothing else.
 ///
 /// It resolves to exactly the same place as the frozen "I am logged in as '&lt;persona&gt;'"

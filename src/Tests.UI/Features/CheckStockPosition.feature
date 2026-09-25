@@ -1,6 +1,6 @@
-# Implements design/features/J04-check-an-items-stock-position.feature.
-# The scenarios below are that file, unchanged - only the tags and this note are added.
-# Job J4 in design/solution-design.md. Everything mechanical lives in
+# Implements job J4 of design/SPECIFICATION.md - "check one item's stock position against its
+# reorder point on demand". The scenarios below are the ones the design step generated for that
+# job, unchanged; only the tags and this note are added. Everything mechanical lives in
 # StepDefinitions/StockPositionSteps.cs, so the feature stays readable to whoever asked for it.
 @live @mda
 Feature: Checking one item's stock position
