@@ -21,7 +21,8 @@
     <AppModuleComponent type="1" schemaName="almlab_product" />
   </AppModuleComponents>
   <AppModuleRoleMaps>
-    <Role id="{979144c2-989b-41a5-a146-6b3ea4130e8c}" />
+    <Role id="{1298b7fd-ab42-45e6-b307-fd2abf6c385b}" />
+    <Role id="{6305b5d9-c049-4d46-8472-91b85b7a16cb}" />
   </AppModuleRoleMaps>
   <LocalizedNames>
     <LocalizedName description="warehouseapp" languagecode="1033" />

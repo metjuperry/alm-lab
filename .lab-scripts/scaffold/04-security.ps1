@@ -13,7 +13,7 @@
 Write-Host "`n── Solutions.Security ──" -ForegroundColor Cyan
 
 if (-not (Get-LabValue 'securityScaffolded')) {
-    txc workspace component create pp-solution `
+    Invoke-LabNative txc workspace component create pp-solution `
         --output "src/Solutions.Security" `
         --param "PublisherName=$PublisherName" `
         --param "PublisherPrefix=$PublisherPrefix"
@@ -22,7 +22,7 @@ if (-not (Get-LabValue 'securityScaffolded')) {
 
     # Add Solutions.Security to the Package Deployer project as a .NET ProjectReference
     cd src/Packages.Main
-    dotnet add "./Packages.Main.csproj" reference "../Solutions.Security/Solutions.Security.csproj"
+    Invoke-LabNative dotnet add "./Packages.Main.csproj" reference "../Solutions.Security/Solutions.Security.csproj"
     cd ../..
 
     Write-Host "  ✓ ProjectReference: Security → Packages.Main" -ForegroundColor Green
@@ -33,13 +33,13 @@ if (-not (Get-LabValue 'securityScaffolded')) {
 
     Write-Host "`n── Security Roles ──" -ForegroundColor Cyan
 
-    txc workspace component create pp-security-role `
+    Invoke-LabNative txc workspace component create pp-security-role `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse worker"
 
     Write-Host "  ✓ Role: Warehouse worker" -ForegroundColor Green
 
-    txc workspace component create pp-security-role `
+    Invoke-LabNative txc workspace component create pp-security-role `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse manager"
 
@@ -56,7 +56,7 @@ if (-not (Get-LabValue 'securityScaffolded')) {
     # only transactions they own (Write: Basic); manager gets full CRUD Global everywhere.
 
     # Warehouse worker — warehouseitem: Read/Write/Create/Append/AppendTo (Global)
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse worker" `
         --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Global }, { PrivilegeType: Create, Level: Global }, { PrivilegeType: Append, Level: Global }, { PrivilegeType: AppendTo, Level: Global }]" `
@@ -65,7 +65,7 @@ if (-not (Get-LabValue 'securityScaffolded')) {
     Write-Host "  ✓ Worker → warehouseitem (RWCA)" -ForegroundColor Green
 
     # Warehouse worker — warehouselocation: Read (Global)
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse worker" `
         --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }]" `
@@ -77,16 +77,16 @@ if (-not (Get-LabValue 'securityScaffolded')) {
     # Create is what lets a worker actually "pick" — creating an Outbound transaction record is
     # the pick action itself (see Plugins.Warehouse), so without it the code app's core workflow
     # would be unusable by the persona it's built for.
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse worker" `
-        --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Basic }, { PrivilegeType: Create, Level: Basic }]" `
+        --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Basic }, { PrivilegeType: Create, Level: Basic }, { PrivilegeType: Append, Level: Basic }]" `
         --param "EntityLogicalName=${PublisherPrefix}_warehousetransaction"
 
     Write-Host "  ✓ Worker → warehousetransaction (R/W/C)" -ForegroundColor Green
 
     # Warehouse manager — warehouseitem: Full CRUD (Global)
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse manager" `
         --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Global }, { PrivilegeType: Create, Level: Global }, { PrivilegeType: Delete, Level: Global }, { PrivilegeType: Append, Level: Global }, { PrivilegeType: AppendTo, Level: Global }]" `
@@ -95,7 +95,7 @@ if (-not (Get-LabValue 'securityScaffolded')) {
     Write-Host "  ✓ Manager → warehouseitem (CRUD)" -ForegroundColor Green
 
     # Warehouse manager — warehouselocation: Full CRUD (Global)
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse manager" `
         --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Global }, { PrivilegeType: Create, Level: Global }, { PrivilegeType: Delete, Level: Global }, { PrivilegeType: Append, Level: Global }, { PrivilegeType: AppendTo, Level: Global }]" `
@@ -104,7 +104,7 @@ if (-not (Get-LabValue 'securityScaffolded')) {
     Write-Host "  ✓ Manager → warehouselocation (CRUD)" -ForegroundColor Green
 
     # Warehouse manager — warehousetransaction: Full CRUD (Global)
-    txc workspace component create pp-security-role-privilege `
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
         --output "src/Solutions.Security" `
         --param "RoleName=Warehouse manager" `
         --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Write, Level: Global }, { PrivilegeType: Create, Level: Global }, { PrivilegeType: Delete, Level: Global }, { PrivilegeType: Append, Level: Global }, { PrivilegeType: AppendTo, Level: Global }]" `

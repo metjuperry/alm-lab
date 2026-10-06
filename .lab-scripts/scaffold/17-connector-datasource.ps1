@@ -23,7 +23,7 @@ $prefixPascal = [char]::ToUpper($PublisherPrefix[0]) + $PublisherPrefix.Substrin
 # like the 3 tables CP09 already registered - no live environment needed here either, since
 # pp-app-code-data reads Entity.xml straight from Solutions.DataModel.
 if (-not (Get-LabValue 'productDataSourceScaffolded')) {
-    txc workspace component create pp-app-code-data `
+    Invoke-LabNative txc workspace component create pp-app-code-data `
         --output "src/Apps.WarehousePicking" `
         --param "EntityLogicalName=${PublisherPrefix}_product" `
         --param "ModelSolutionPath=../Solutions.DataModel"
@@ -45,7 +45,7 @@ if (-not (Get-LabValue 'productDataSourceScaffolded')) {
 # data source - re-run pp-app-code-data for it too, so the stale model picks up the new
 # productid field. Re-running for a table that already has a data source just regenerates its
 # Model/Service files fresh from the entity's current Entity.xml; idempotent either way.
-txc workspace component create pp-app-code-data `
+Invoke-LabNative txc workspace component create pp-app-code-data `
     --output "src/Apps.WarehousePicking" `
     --param "EntityLogicalName=${PublisherPrefix}_warehouseitem" `
     --param "ModelSolutionPath=../Solutions.DataModel"
@@ -63,6 +63,29 @@ if (-not ((Get-Content $warehouseitemModelPath -Raw) -match "${PublisherPrefix}_
 # lines, so keeping only the first occurrence of each is exactly the intended fix.
 $indexTsPath = "src/Apps.WarehousePicking/src/generated/index.ts"
 Set-Content -Path $indexTsPath -Value (Get-Content $indexTsPath | Select-Object -Unique) -Encoding UTF8
+
+# On a case-insensitive disk (macOS, Windows) the generator's post-action cannot rename its
+# placeholder service onto the existing ${prefixPascal}_warehouseitemsService.ts and leaves the
+# placeholder behind. Delete it only when it is an exact copy of the real file, so nothing
+# unexpected is ever discarded, and drop its export line as well.
+$servicesDir = "src/Apps.WarehousePicking/src/generated/services"
+$stray = "$servicesDir/capitalizedentitylogicalnameexamplesService.ts"
+if (Test-Path $stray) {
+    $expected = "$servicesDir/${prefixPascal}_warehouseitemsService.ts"
+    $strayText = (Get-Content $stray -Raw).Replace("`r`n", "`n").Trim()
+    if ($strayText -ne (Get-Content $expected -Raw).Replace("`r`n", "`n").Trim()) {
+        Write-Err "Unexpected generator output at $stray differs from $expected; inspect it rather than deleting it."
+        exit 1
+    }
+    Remove-Item $stray
+    Write-Info "Removed the generator's leftover placeholder service (an exact copy of ${prefixPascal}_warehouseitemsService.ts)."
+}
+Set-Content -Path $indexTsPath -Value (Get-Content $indexTsPath | Where-Object { $_ -notmatch 'capitalizedentitylogicalnameexamples' }) -Encoding UTF8
+$unexpected = @(Get-ChildItem $servicesDir -Filter '*.ts' | Where-Object { $_.Name -notmatch "^${prefixPascal}_[a-z]+Service\.ts$|^OpenFoodFactsService\.ts$" })
+if ($unexpected.Count) {
+    Write-Err "Unexpected generated services: $($unexpected.Name -join ', '). Inspect them before continuing."
+    exit 1
+}
 
 Write-Host "  ✓ Data source: ${PublisherPrefix}_warehouseitem (refreshed for new Product lookup)" -ForegroundColor Green
 
@@ -141,7 +164,7 @@ if (-not (Get-LabValue 'connectorDataSourceScaffolded')) {
     Write-Host "  → Installing @zxing/browser (camera barcode decoding)..." -ForegroundColor White
     Push-Location $appRoot
     try {
-        npm install @zxing/browser --save --silent
+        Invoke-LabNative npm install @zxing/browser --save --silent
         if ($LASTEXITCODE -ne 0) { Write-Err "npm install @zxing/browser failed"; exit 1 }
     } finally { Pop-Location }
     Write-Host "  ✓ @zxing/browser installed" -ForegroundColor Green
@@ -154,16 +177,23 @@ if (-not (Get-LabValue 'connectorDataSourceScaffolded')) {
     } else {
         Push-Location $appRoot
         try {
-            Write-Info "Creating a connection to the Open Food Facts connector..."
-            $connectionJson = pa connection create --connector "almlab_connectorsopenfoodfacts" --display-name "Open Food Facts" --json
-            if ($LASTEXITCODE -ne 0) { Write-Err "pa connection create failed"; exit 1 }
-            $connectionId = ($connectionJson | ConvertFrom-Json).connectionId
-            if (-not $connectionId) { Write-Err "Could not parse connectionId from 'pa connection create' output"; exit 1 }
-            Write-Ok "Connection created: $connectionId"
-
-            Write-Info "Adding the connector as a data source..."
-            pa app add data-source --connector "almlab_connectorsopenfoodfacts" --connection-id $connectionId
-            if ($LASTEXITCODE -ne 0) { Write-Err "pa app add data-source failed"; exit 1 }
+            $binding = Get-LabConnectorConnection dev
+            $configPath = 'power.config.json'
+            $config = Get-Content $configPath -Raw | ConvertFrom-Json
+            $config.environmentId = $binding.EnvironmentId
+            $config | ConvertTo-Json -Depth 30 | Set-Content $configPath
+            Invoke-LabNative pa app add data-source --environment-id $binding.EnvironmentId `
+                --connector $binding.ConnectorId --connection-ref "${PublisherPrefix}_openfoodfacts" --non-interactive
+            $config = Get-Content $configPath -Raw | ConvertFrom-Json -AsHashtable
+            if (-not ($config.connectionReferences.Values | Where-Object xrmConnectionReferenceLogicalName -eq "${PublisherPrefix}_openfoodfacts")) {
+                throw 'The generated code app does not carry its portable connection reference.'
+            }
+            $exports = 'src/generated/index.ts'
+            Set-Content $exports (Get-Content $exports | Select-Object -Unique) -Encoding UTF8
+            $service = Get-Content 'src/generated/services/OpenFoodFactsService.ts' -Raw
+            if ($service -notmatch 'GetProductImage' -or $service -match "dataSourceName = 'OpenFoodFacts'") {
+                throw 'pa did not produce the live connector service with both operations.'
+            }
             Write-Ok "Connector wired into power.config.json - re-run 'npm run build' to confirm"
         } finally { Pop-Location }
     }

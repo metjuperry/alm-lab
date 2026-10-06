@@ -16,7 +16,7 @@
 Write-Host "`n── Product table ──" -ForegroundColor Cyan
 
 if (-not (Get-LabValue 'productTableScaffolded')) {
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.DataModel" `
         --param "EntityType=Standard" `
         --param "Behavior=New" `
@@ -35,7 +35,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
     # no separate "ProductName" column needed, same as warehouseitem/warehouselocation/
     # warehousetransaction never define one of their own either.
 
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=Text" `
@@ -46,7 +46,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
 
     Write-Host "  ✓ product.ean (Text)" -ForegroundColor Green
 
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=Text" `
@@ -59,7 +59,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
 
     # Open Food Facts' own "quantity" field is free text (e.g. "750g", "1L"), not a number —
     # Text, not WholeNumber/Decimal.
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=Text" `
@@ -70,7 +70,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
 
     Write-Host "  ✓ product.quantity (Text)" -ForegroundColor Green
 
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=Text" `
@@ -86,7 +86,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
     # truncated" on almlab_imageurl when linking a real product).
     Write-Host "  ✓ product.imageurl (Text, 500 chars)" -ForegroundColor Green
 
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=DateTime" `
@@ -111,7 +111,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
     # in the generated Product model at all. File columns support both upload and download via
     # the SDK's (undocumented-in-generated-code but public) uploadFileToRecord/
     # downloadFileFromRecord client methods.
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_product" `
         --param "AttributeType=File" `
@@ -127,7 +127,7 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
     # ──────────────────────────────────────────────────────────────────────────────────────
     # Optional: existing Item records predate Product and won't have a match until scanned.
 
-    txc workspace component create pp-entity-attribute `
+    Invoke-LabNative txc workspace component create pp-entity-attribute `
         --output "src/Solutions.DataModel" `
         --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
         --param "AttributeType=Lookup" `
@@ -146,3 +146,24 @@ if (-not (Get-LabValue 'productTableScaffolded')) {
 } else {
     Write-Host "  ✓ Product table (exists)" -ForegroundColor Green
 }
+
+Invoke-LabNative txc workspace component create pp-app-model-component `
+    --output "src/Solutions.UI" `
+    --param "EntityLogicalName=${PublisherPrefix}_product" `
+    --param "AppName=${PublisherPrefix}_warehouseapp"
+Invoke-LabNative txc workspace component create pp-sitemap-subarea `
+    --output "src/Solutions.UI" `
+    --param "EntityLogicalName=${PublisherPrefix}_product" `
+    --param "Title=Products" --param "GroupTitle=Management" `
+    --param "AreaTitle=Warehouse" --param "AppName=${PublisherPrefix}_warehouseapp"
+
+foreach ($role in @('Warehouse worker', 'Warehouse manager')) {
+    Invoke-LabNative txc workspace component create pp-security-role-privilege `
+        --output "src/Solutions.Security" --param "RoleName=$role" `
+        --param "EntityLogicalName=${PublisherPrefix}_product" `
+        --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Read, Level: Global }, { PrivilegeType: Create, Level: Global }, { PrivilegeType: Write, Level: Global }, { PrivilegeType: AppendTo, Level: Global }]"
+}
+Invoke-LabNative txc workspace component create pp-security-role-privilege `
+    --output 'src/Solutions.Security' --param 'RoleName=Warehouse manager' `
+    --param "EntityLogicalName=${PublisherPrefix}_product" `
+    --param "PrivilegeTypeAndLevel=[{ PrivilegeType: Delete, Level: Global }, { PrivilegeType: Append, Level: Global }]"
