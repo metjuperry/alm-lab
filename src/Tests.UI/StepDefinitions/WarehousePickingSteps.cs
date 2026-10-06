@@ -16,19 +16,19 @@ namespace Tests.UI.StepDefinitions;
 public sealed class WarehousePickingSteps
 {
     // The code app has no fixed deployed URL in this lab — attendees run it locally. Point at
-    // the Vite dev server the CP11 "try it live" pause tells you to start with `npm run dev`.
+    // the Vite dev server the CP12 "try it live" pause tells you to start with `npm run dev`.
     // Override with TXC_CODEAPP_URL once the app is actually deployed and you want to test
     // that URL instead.
-    private const string DefaultCodeAppUrl = "http://localhost:5173";
 
     private readonly ScenarioContext _scenarioContext;
     private IPage Page => (IPage)_scenarioContext[Hooks.PageKey];
 
     // Captured from the UI when the item is opened, not assumed from the CMT seed data —
-    // this is a real, shared Dataverse environment with no test fixture/teardown, and CP11's
+    // this is a real, shared Dataverse environment with no test fixture/teardown, and CP12's
     // own "try it live" walkthrough picks from these same records, so the absolute quantity
     // drifts across lab runs. Every assertion below is relative to this captured baseline.
     private int _startingQuantity;
+    private GroceryFixture? _fixture;
 
     public WarehousePickingSteps(ScenarioContext scenarioContext)
     {
@@ -38,7 +38,8 @@ public sealed class WarehousePickingSteps
     [Given("I open the warehouse picking app")]
     public async Task GivenIOpenTheWarehousePickingApp()
     {
-        var baseUrl = Environment.GetEnvironmentVariable("TXC_CODEAPP_URL") ?? DefaultCodeAppUrl;
+        var baseUrl = Environment.GetEnvironmentVariable("TXC_CODEAPP_URL")
+            ?? throw new InvalidOperationException("Set TXC_CODEAPP_URL to the deployed Test code app (or an explicitly started local preview).");
         await Page.GotoAsync(baseUrl);
         await Page.GetByTestId("warehouse-item-row").First.WaitForAsync(
             new LocatorWaitForOptions { Timeout = 15000 });
@@ -47,7 +48,10 @@ public sealed class WarehousePickingSteps
     [Given("I open the {string} item")]
     public async Task GivenIOpenTheItem(string itemName)
     {
-        var row = Page.GetByTestId("warehouse-item-row").Filter(new() { HasText = itemName });
+        _fixture = await GroceryFixture.CreateAsync(Page.Context, itemName);
+        await _fixture.SeedAsync(Page.Context, itemName.Contains("Nutella", StringComparison.Ordinal) ? 5 : 100);
+        await Page.ReloadAsync();
+        var row = Page.GetByTestId("warehouse-item-row").Filter(new() { HasText = _fixture.Name });
         await row.WaitForAsync(new LocatorWaitForOptions { Timeout = 15000 });
         await row.GetByRole(AriaRole.Link).ClickAsync();
 
@@ -58,6 +62,15 @@ public sealed class WarehousePickingSteps
         {
             Assert.Fail($"Expected a numeric qty on hand but found '{quantityText}'.");
         }
+
+    }
+
+    [AfterScenario]
+    public async Task DeleteScenarioFixture()
+    {
+        if (_fixture is null) return;
+        var browser = Page.Context.Browser ?? throw new InvalidOperationException("The test browser is unavailable for fixture cleanup.");
+        await _fixture.DeleteAsync(browser);
     }
 
     [When("I pick a quantity of {string}")]
@@ -78,6 +91,11 @@ public sealed class WarehousePickingSteps
         var requested = _startingQuantity + 1;
         var message = $"Not enough product in stock. Available: {_startingQuantity}, requested: {requested}.";
         await Expect(Page.GetByText(message)).ToBeVisibleAsync(new() { Timeout = 15000 });
+        await Expect(Page.GetByText("Transaction created")).ToHaveCountAsync(0);
+        var fixture = _fixture ?? throw new InvalidOperationException("A scenario fixture is required.");
+        var stored = await fixture.ReadStateAsync(Page.Context);
+        Assert.AreEqual(_startingQuantity, stored.GetProperty("quantity").GetInt32());
+        Assert.AreEqual(1, stored.GetProperty("movements").GetInt32(), "A rejected pick must not create a movement.");
     }
 
     [Then("the quantity on hand should have decreased by {string}")]
@@ -85,6 +103,41 @@ public sealed class WarehousePickingSteps
     {
         var expected = (_startingQuantity - int.Parse(decrement)).ToString();
         await Expect(Page.GetByTestId("item-detail-qty")).ToHaveTextAsync(expected, new() { Timeout = 15000 });
+        var fixture = _fixture ?? throw new InvalidOperationException("A scenario fixture is required.");
+        var stored = await fixture.ReadStateAsync(Page.Context);
+        Assert.AreEqual(int.Parse(expected), stored.GetProperty("quantity").GetInt32());
+        Assert.AreEqual(2, stored.GetProperty("movements").GetInt32(), "A successful pick creates exactly one movement.");
+    }
+
+    // CI/Playwright runners have no camera - the scan dialog's manual EAN input is the test
+    // hook BarcodeScanDialog.tsx exposes for exactly this case, so this step never touches the
+    // (unavailable) camera path at all.
+    [When("I enter the barcode {string} and look it up")]
+    public async Task WhenIEnterTheBarcodeAndLookItUp(string barcode)
+    {
+        await Page.GetByTestId("scan-barcode-button").ClickAsync();
+        var eanInput = Page.GetByTestId("scan-ean-input");
+        await eanInput.WaitForAsync(new LocatorWaitForOptions { Timeout = 15000 });
+        await eanInput.FillAsync(barcode);
+        await Page.GetByTestId("scan-lookup-button").ClickAsync();
+    }
+
+    [Then("I should see the product {string} in the scan preview")]
+    public async Task ThenIShouldSeeTheProductInTheScanPreview(string productName)
+    {
+        await Expect(Page.GetByTestId("scan-product-name")).ToHaveTextAsync(productName, new() { Timeout = 15000 });
+    }
+
+    [When("I link the scanned product to the item")]
+    public async Task WhenILinkTheScannedProductToTheItem()
+    {
+        await Page.GetByTestId("scan-link-button").ClickAsync();
+    }
+
+    [Then("the item should show {string} as its linked product")]
+    public async Task ThenTheItemShouldShowAsItsLinkedProduct(string productName)
+    {
+        await Expect(Page.GetByTestId("linked-product-name")).ToContainTextAsync(productName, new() { Timeout = 15000 });
     }
 
     // A "pick" in the UI is a New Transaction with type Outbound — fill the dialog the same
@@ -101,4 +154,3 @@ public sealed class WarehousePickingSteps
         await Page.GetByTestId("submit-transaction").ClickAsync();
     }
 }
-

@@ -3,14 +3,55 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: live-ui-test
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      TXC_ENVIRONMENT_URL: ${{ secrets.DATAVERSE_TEST_URL }}
+      TXC_APP_NAME: almlab_warehouseapp
+      TXC_CODEAPP_URL: ${{ vars.TXC_CODEAPP_URL }}
+      TXC_HEADLESS: 'true'
+      TXC_TRACING_ENABLED: 'true'
+      TXC_USER_WAREHOUSE_MANAGER_USERNAME: ${{ secrets.TXC_USER_WAREHOUSE_MANAGER_USERNAME }}
+      TXC_USER_WAREHOUSE_MANAGER_PASSWORD: ${{ secrets.TXC_USER_WAREHOUSE_MANAGER_PASSWORD }}
+      TXC_USER_WAREHOUSE_MANAGER_OTP_SECRET: ${{ secrets.TXC_USER_WAREHOUSE_MANAGER_OTP_SECRET }}
+      TXC_USER_WAREHOUSE_FLOOR_WORKER_USERNAME: ${{ secrets.TXC_USER_WAREHOUSE_FLOOR_WORKER_USERNAME }}
+      TXC_USER_WAREHOUSE_FLOOR_WORKER_PASSWORD: ${{ secrets.TXC_USER_WAREHOUSE_FLOOR_WORKER_PASSWORD }}
+      TXC_USER_WAREHOUSE_FLOOR_WORKER_OTP_SECRET: ${{ secrets.TXC_USER_WAREHOUSE_FLOOR_WORKER_OTP_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
-      - run: dotnet test src/Tests.UI/Tests.UI.csproj --configuration Release
-        env:
-          TXC_HEADLESS: 'true'
+      - name: Check live test configuration
+        shell: pwsh
+        run: |
+          foreach ($name in @('TXC_ENVIRONMENT_URL', 'TXC_CODEAPP_URL',
+            'TXC_USER_WAREHOUSE_MANAGER_USERNAME', 'TXC_USER_WAREHOUSE_MANAGER_PASSWORD',
+            'TXC_USER_WAREHOUSE_FLOOR_WORKER_USERNAME', 'TXC_USER_WAREHOUSE_FLOOR_WORKER_PASSWORD')) {
+            if (-not [Environment]::GetEnvironmentVariable($name)) { throw "Configure $name before running live tests." }
+          }
+          if ($env:TXC_USER_WAREHOUSE_MANAGER_USERNAME -eq $env:TXC_USER_WAREHOUSE_FLOOR_WORKER_USERNAME) {
+            throw 'Use distinct non-admin manager and worker test accounts.'
+          }
+      - name: Build UI tests
+        run: dotnet build src/Tests.UI/Tests.UI.csproj --configuration Release
+      - name: Install Chromium and system dependencies
+        shell: pwsh
+        run: src/Tests.UI/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      - name: Run offline helpers
+        run: dotnet test src/Tests.UI/Tests.UI.csproj -c Release --no-build --filter 'TestCategory!=live'
+      - name: Run live app scenarios
+        run: dotnet test src/Tests.UI/Tests.UI.csproj -c Release --no-build --filter 'TestCategory=live' --logger trx --results-directory ./TestResults
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-test-results
+          path: |
+            TestResults/
+            src/Tests.UI/bin/Release/net10.0/TestResults/
+          if-no-files-found: warn
+          retention-days: 7
