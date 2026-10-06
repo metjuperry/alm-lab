@@ -1,4 +1,4 @@
-# .infra — Terraform scaffold
+# infra — Terraform scaffold
 
 > **Status:** `environments/`, `groups/`, and `identity/` are driven by
 > `.lab-scripts/CP04b-setup-runtime-terraform.ps1` and
@@ -27,7 +27,7 @@ imperative, owned by the checkpoint scripts.
 
 ## Layout
 
-    .infra/
+    infra/
     ├── tenant/terraform/          # singleton: tenant-wide settings
     ├── identity/terraform/        # singleton: CD app registration + SP + federated credential
     ├── groups/terraform/          # one module instance per environment group
@@ -63,6 +63,11 @@ routine re-run should trigger as a side effect.
   `use_cli = true` (Power Platform) and the Azure CLI's default credential
   (`azuread`), not client secrets or OIDC — there's no service principal available
   to Terraform itself in this lab.
+
+CP05b resolves the repository's effective OIDC subject (including immutable
+owner/repository IDs when enabled) and passes `github_oidc_subject` into the
+identity module. If applying that module directly, supply the same resolved
+subject; do not assume `repo:owner/name:ref:refs/heads/main` matches every fork.
 
 ## State
 

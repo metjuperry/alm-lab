@@ -24,6 +24,11 @@ variable "github_repo" {
   default     = "TODO-CHANGE-ME/alm-lab"
 }
 
+variable "github_oidc_subject" {
+  description = "Effective GitHub main-branch subject, resolved from the repository OIDC policy."
+  type        = string
+}
+
 resource "azuread_application" "deploy" {
   display_name = var.app_display_name
 }
@@ -38,7 +43,7 @@ resource "azuread_application_federated_identity_credential" "github_main" {
   description    = "GitHub Actions OIDC trust for deployments from main"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_repo}:ref:refs/heads/main"
+  subject        = var.github_oidc_subject
 }
 
 output "client_id" {

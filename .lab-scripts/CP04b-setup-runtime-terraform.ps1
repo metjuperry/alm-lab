@@ -40,6 +40,10 @@ function Get-ConnectionByIdOrUrl {
         [Parameter(Mandatory)][string]$Url
     )
     if (-not $Connections -or $Connections.Count -eq 0) { return $null }
+    $named = $Connections | Where-Object id -eq $Name
+    if ($named -and $named.environmentUrl.TrimEnd('/') -ne $Url.TrimEnd('/')) {
+        throw "Connection '$Name' already targets another environment. Rename it before continuing."
+    }
     return $Connections |
         Where-Object { $_.id -eq $Name -or $_.environmentUrl -eq $Url } |
         Select-Object -First 1
@@ -183,7 +187,7 @@ foreach ($key in @('dev', 'test')) {
 }
 
 # Pin the dev profile as default for local deploys.
-txc config profile select dev | Out-Null
+Invoke-LabNative txc config profile select dev | Out-Null
 Write-Ok "Active profile: dev"
 
 }
