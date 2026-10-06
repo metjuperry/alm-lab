@@ -14,7 +14,7 @@
 Write-Host "`n── Solutions.UI ──" -ForegroundColor Cyan
 
 if (-not (Get-LabValue 'uiSolutionScaffolded')) {
-    txc workspace component create pp-solution `
+    Invoke-LabNative txc workspace component create pp-solution `
         --output "src/Solutions.UI" `
         --param "PublisherName=$PublisherName" `
         --param "PublisherPrefix=$PublisherPrefix"
@@ -23,7 +23,7 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
 
     # Add Solutions.UI to the Package Deployer project as a .NET ProjectReference
     cd src/Packages.Main
-    dotnet add "./Packages.Main.csproj" reference "../Solutions.UI/Solutions.UI.csproj"
+    Invoke-LabNative dotnet add "./Packages.Main.csproj" reference "../Solutions.UI/Solutions.UI.csproj"
     cd ../..
 
     Write-Host "  ✓ ProjectReference: UI → Packages.Main" -ForegroundColor Green
@@ -37,7 +37,7 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
     # Behavior=Existing creates a reference, not a table: the schema stays owned by
     # Solutions.DataModel; this solution only layers UI (forms, views, ribbon) on top of it.
 
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.UI" `
         --param "Behavior=Existing" `
         --param "PublisherPrefix=$PublisherPrefix" `
@@ -46,7 +46,7 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
 
     Write-Host "  ✓ Entity ref: Warehouse Location" -ForegroundColor Green
 
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.UI" `
         --param "Behavior=Existing" `
         --param "PublisherPrefix=$PublisherPrefix" `
@@ -55,7 +55,7 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
 
     Write-Host "  ✓ Entity ref: Warehouse Item" -ForegroundColor Green
 
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.UI" `
         --param "Behavior=Existing" `
         --param "PublisherPrefix=$PublisherPrefix" `
@@ -70,7 +70,7 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
 
     Write-Host "`n── Model-Driven App ──" -ForegroundColor Cyan
 
-    txc workspace component create pp-app-model `
+    Invoke-LabNative txc workspace component create pp-app-model `
         --output "src/Solutions.UI" `
         --param "PublisherPrefix=$PublisherPrefix" `
         --param "LogicalName=warehouseapp"
@@ -83,26 +83,46 @@ if (-not (Get-LabValue 'uiSolutionScaffolded')) {
 
     Write-Host "`n── App Components ──" -ForegroundColor Cyan
 
-    txc workspace component create pp-app-model-component `
+    Invoke-LabNative txc workspace component create pp-app-model-component `
         --output "src/Solutions.UI" `
         --param "EntityLogicalName=${PublisherPrefix}_warehouselocation" `
         --param "AppName=${PublisherPrefix}_warehouseapp"
 
     Write-Host "  ✓ App component: warehouselocation" -ForegroundColor Green
 
-    txc workspace component create pp-app-model-component `
+    Invoke-LabNative txc workspace component create pp-app-model-component `
         --output "src/Solutions.UI" `
         --param "EntityLogicalName=${PublisherPrefix}_warehouseitem" `
         --param "AppName=${PublisherPrefix}_warehouseapp"
 
     Write-Host "  ✓ App component: warehouseitem" -ForegroundColor Green
 
-    txc workspace component create pp-app-model-component `
+    Invoke-LabNative txc workspace component create pp-app-model-component `
         --output "src/Solutions.UI" `
         --param "EntityLogicalName=${PublisherPrefix}_warehousetransaction" `
         --param "AppName=${PublisherPrefix}_warehouseapp"
 
     Write-Host "  ✓ App component: warehousetransaction" -ForegroundColor Green
+
+    $roleIds = @(Get-ChildItem 'src/Solutions.Security/Roles/*.xml' | ForEach-Object {
+        ([xml](Get-Content $_.FullName -Raw)).Role.id.Trim('{}')
+    })
+    # pp-app-security-role currently imports an AppModuleRoles node it never generates.
+    # Write the verified RoleMaps contract rather than leaving inaccessible app defaults.
+    $appPath = "src/Solutions.UI/AppModules/${PublisherPrefix}_warehouseapp/AppModule.xml"
+    [xml]$app = Get-Content $appPath -Raw
+    $maps = $app.SelectSingleNode('/AppModule/AppModuleRoleMaps')
+    if (-not $maps) {
+        $maps = $app.CreateElement('AppModuleRoleMaps')
+        [void]$app.DocumentElement.AppendChild($maps)
+    }
+    $maps.RemoveAll()
+    foreach ($id in $roleIds) {
+        $role = $app.CreateElement('Role')
+        $role.SetAttribute('id', "{$id}")
+        [void]$maps.AppendChild($role)
+    }
+    $app.Save((Resolve-Path $appPath).Path)
 
     # Marks the whole block done — checked instead of Test-Path on the solution csproj so a
     # re-run after a partial failure (e.g. solution created but the app/components didn't

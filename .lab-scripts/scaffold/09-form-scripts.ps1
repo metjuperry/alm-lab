@@ -13,12 +13,12 @@
 
 Write-Host "`n── Scripts.UI ──" -ForegroundColor Cyan
 
-txc workspace component create pp-script-library `
+Invoke-LabNative txc workspace component create pp-script-library `
     --param "LibraryName=main" `
     --param "PublisherPrefix=$PublisherPrefix" `
     --output "src/Scripts.UI"
 
-dotnet sln add src/Scripts.UI
+Invoke-LabNative dotnet sln add src/Scripts.UI
 
 Write-Host "  ✓ Scripts.UI project (TypeScript → JS)" -ForegroundColor Green
 
@@ -46,7 +46,7 @@ Write-Host "  ✓ rollup.config.mjs (UMD name → WarehouseScripts)" -Foreground
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
 cd src/Solutions.UI
-dotnet add reference ../Scripts.UI/Scripts.UI.csproj
+Invoke-LabNative dotnet add reference ../Scripts.UI/Scripts.UI.csproj
 cd ../..
 
 Write-Host "  ✓ ProjectReference: Scripts.UI → Solutions.UI" -ForegroundColor Green
@@ -57,7 +57,7 @@ Write-Host "  ✓ ProjectReference: Scripts.UI → Solutions.UI" -ForegroundColo
 
 Write-Host "  → Building Scripts.UI..." -ForegroundColor White
 cd src/Scripts.UI
-dotnet build --nologo --verbosity quiet
+Invoke-LabNative dotnet build --nologo --verbosity quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Scripts build succeeded" -ForegroundColor Green
 } else {
@@ -72,7 +72,7 @@ cd ../..
 Write-Host "`n── Form Event Handlers ──" -ForegroundColor Cyan
 
 # OnLoad handler on warehouse transaction form
-txc workspace component create pp-form-event-handler `
+Invoke-LabNative txc workspace component create pp-form-event-handler `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
@@ -84,7 +84,7 @@ txc workspace component create pp-form-event-handler `
 Write-Host "  ✓ Event handler: warehousetransaction form → onLoad" -ForegroundColor Green
 
 # OnChange handler on quantity field
-txc workspace component create pp-form-event-handler `
+Invoke-LabNative txc workspace component create pp-form-event-handler `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `

@@ -52,7 +52,7 @@ function Add-ViewColumns {
     $xml.Save($viewFile.FullName)
 }
 
-txc workspace component create pp-entity-view `
+Invoke-LabNative txc workspace component create pp-entity-view `
     --output "src/Solutions.UI" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
     --param "DisplayName=Active Warehouse Locations" `
@@ -69,7 +69,7 @@ $warehouselocationViewGuid = $warehouselocationViewFile.BaseName.Trim('{}')
 
 Write-Host "  ✓ View: Active Warehouse Locations (with columns) — GUID: $warehouselocationViewGuid" -ForegroundColor Green
 
-txc workspace component create pp-entity-view `
+Invoke-LabNative txc workspace component create pp-entity-view `
     --output "src/Solutions.UI" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "DisplayName=Active Warehouse Items" `
@@ -86,7 +86,7 @@ $warehouseitemViewGuid = $warehouseitemViewFile.BaseName.Trim('{}')
 
 Write-Host "  ✓ View: Active Warehouse Items (with columns) — GUID: $warehouseitemViewGuid" -ForegroundColor Green
 
-txc workspace component create pp-entity-view `
+Invoke-LabNative txc workspace component create pp-entity-view `
     --output "src/Solutions.UI" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "DisplayName=Active Warehouse Transactions" `
@@ -130,7 +130,7 @@ if (-not $locationItemsRelationship -or -not $itemTransactionsRelationship) {
 }
 
 # Warehouse Location form: subgrid showing related Warehouse Items
-txc workspace component create pp-form-subgrid `
+Invoke-LabNative txc workspace component create pp-form-subgrid `
     --output "src/Solutions.UI" `
     --param "SubgridLabel=Warehouse Items" `
     --param "FormType=main" `
@@ -143,7 +143,7 @@ txc workspace component create pp-form-subgrid `
 Write-Host "  ✓ Subgrid: warehouselocation → Warehouse Items ($locationItemsRelationship)" -ForegroundColor Green
 
 # Warehouse Item form: subgrid showing related Warehouse Transactions
-txc workspace component create pp-form-subgrid `
+Invoke-LabNative txc workspace component create pp-form-subgrid `
     --output "src/Solutions.UI" `
     --param "SubgridLabel=Warehouse Transactions" `
     --param "FormType=main" `
