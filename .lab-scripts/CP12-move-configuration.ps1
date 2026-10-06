@@ -27,15 +27,18 @@ $ErrorActionPreference = "Stop"
 $PublisherPrefix = Get-LabValue 'publisherPrefix' 'almlab'
 
 Write-Step "CP12 — Configuration data (CMT)"
+Assert-LabProfile dev
+Assert-LabProfile test
+Wait-LabTestDeployment
 Push-Location $LabRoot
 try {
     . "$PSScriptRoot/scaffold/13-config-data.ps1"
 
     $dataDir    = Join-Path $LabRoot "src/Packages.Main/Data"
     $schemaPath = Join-Path $dataDir "data_schema.xml"
-    Set-LabValue 'configDataDirectory'  $dataDir
-    Set-LabValue 'configDataSchemaPath' $schemaPath
-    Set-LabValue 'configDataFilePath'   (Join-Path $dataDir "data.xml")
+    Set-LabValue 'configDataDirectory'  'src/Packages.Main/Data'
+    Set-LabValue 'configDataSchemaPath' 'src/Packages.Main/Data/data_schema.xml'
+    Set-LabValue 'configDataFilePath'   'src/Packages.Main/Data/data.xml'
 
     if ($env:LAB_LOCAL_MODE) {
         Write-Info "LAB_LOCAL_MODE: skipped — would run 'txc data pkg import' to seed Dev,"
@@ -58,20 +61,27 @@ try {
         }
 
         # Step 1: Import the seed package into Dev — the app now has data.
-        txc data pkg import $dataDir --profile $devProfile --allow-production
-        if ($LASTEXITCODE -ne 0) { Write-Err "Seed import to Dev failed"; exit 1 }
-        Write-Ok "Seed data imported to Dev"
+        if (-not (Get-LabValue 'devSeedImported')) {
+            txc data pkg import $dataDir --profile $devProfile
+            if ($LASTEXITCODE -ne 0) { Write-Err "Seed import to Dev failed"; exit 1 }
+            Set-LabValue 'devSeedImported' $true
+            Write-Ok "Seed data imported to Dev"
+        } else { Write-Info "Dev is already seeded; preserving current balances." }
 
         # Step 2: Round-trip — export Dev data back into the package. Records added by hand
         # in the maker portal get captured as source, same idea as the CP10 solution pull.
-        txc data pkg export --schema $schemaPath --output $dataDir --overwrite --profile $devProfile --allow-production
+        txc data pkg export --schema $schemaPath --output $dataDir --overwrite --profile $devProfile
         if ($LASTEXITCODE -ne 0) { Write-Err "Config export from Dev failed"; exit 1 }
         Write-Ok "Dev data exported back to source"
 
         # Step 3: Import into Test — config travels with the app, no re-keying per environment.
-        txc data pkg import $dataDir --profile $testProfile --allow-production
+        txc data pkg import $dataDir --profile $testProfile
         if ($LASTEXITCODE -ne 0) { Write-Err "Config import failed"; exit 1 }
         Write-Ok "Config imported to Test"
+        $apps = @(Invoke-LabNative txc env data query odata canvasapps --select canvasappid,appopenuri `
+            --filter "name eq '${PublisherPrefix}_warehousepicking'" --profile $testProfile --format json | ConvertFrom-Json)
+        if ($apps.Count -ne 1 -or -not $apps[0].appopenuri) { throw 'The deployed Test code app URL could not be resolved.' }
+        Invoke-LabNative gh variable set TXC_CODEAPP_URL --repo (Get-LabRepository) --body $apps[0].appopenuri
 
         # ──────────────────────────────────────────────────────────────────────────────────
         # Step 4: Try the code app against real data (interactive mode).
@@ -90,9 +100,9 @@ try {
             Write-Host "║    cd src/Apps.WarehousePicking && npm install && npm run dev        ║" -ForegroundColor Yellow
             Write-Host "║                                                                      ║" -ForegroundColor Yellow
             Write-Host "║  Open the printed local URL, sign in, then try:                      ║" -ForegroundColor Yellow
-            Write-Host "║   1. Open Office Laptop (qty 100) and create an Outbound transaction ║" -ForegroundColor Yellow
+            Write-Host "║   1. Open Long Grain Rice 1kg (qty 100) and create an Outbound transaction ║" -ForegroundColor Yellow
             Write-Host "║      for a small quantity — succeeds, qty on hand updates live.      ║" -ForegroundColor Yellow
-            Write-Host "║   2. Request more than 5 for Wireless Mouse (qty 5) — watch the live  ║" -ForegroundColor Yellow
+            Write-Host "║   2. Request more than 5 for Nutella Hazelnut Spread 400g (qty 5) — watch the live  ║" -ForegroundColor Yellow
             Write-Host "║      ValidateWarehouseTransactionPlugin rejection surface as a toast. ║" -ForegroundColor Yellow
             Write-Host "║                                                                      ║" -ForegroundColor Yellow
             Write-Host "║  Press ENTER when you're done trying it...                           ║" -ForegroundColor Yellow
@@ -109,16 +119,16 @@ Package warehouse reference data so environments stay consistent as the app move
 ## Changes
 - add src/Packages.Main/Data/data_schema.xml covering the four warehouse tables (including Product)
 - add src/Packages.Main/Data/data.xml with seed locations, products, items, and transactions
-  (Wireless Mouse is pre-linked to a seeded Nutella product record)
+  (Nutella Hazelnut Spread 400g is pre-linked to a seeded Nutella product record)
 - add the [Content_Types].xml OPC manifest required by the CMT package format
 - import the package into Dev and Test; export captures manual Dev records as source
 - pause after the Dev import so you can run the Warehouse Picking code app locally
-  (npm run dev) against real seeded data — pick from Office Laptop (qty 100, succeeds)
-  and try over-picking Wireless Mouse (qty 5, fails with the live plugin validation
+  (npm run dev) against real seeded data — pick from Long Grain Rice 1kg (qty 100, succeeds)
+  and try over-picking Nutella Hazelnut Spread 400g (qty 5, fails with the live plugin validation
   error surfaced as a toast)
 ## Testing
 - txc data package import and export complete successfully against Dev and Test
 - code app npm run dev against Dev shows real items/locations, a successful pick updates
-  quantity live, and an over-pick on Wireless Mouse surfaces the plugin's rejection message
+  quantity live, and an over-pick on Nutella Hazelnut Spread 400g surfaces the plugin's rejection message
 '@
 Write-Host "`nNext: .lab-scripts/CP13-extend-branch-policies-build-checks.ps1" -ForegroundColor Cyan
