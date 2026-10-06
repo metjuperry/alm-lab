@@ -40,6 +40,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { ArrowLeft, Plus, Package, ArrowRightLeft, MapPin } from "lucide-react";
 import BarcodeScanDialog from "@/components/BarcodeScanDialog";
 import LinkedProductImage from "@/components/LinkedProductImage";
@@ -53,16 +54,16 @@ export default function WarehouseItemDetailPage() {
   const [txQuantity, setTxQuantity] = useState("");
   const [txType, setTxType] = useState("");
 
-  const { data: item, isLoading: itemLoading } = useQuery({
+  const { data: item, isLoading: itemLoading, error: itemError } = useQuery({
     queryKey: ["warehouseItem", id],
     queryFn: async () => {
       const result = await Almlab_warehouseitemsService.get(id!);
-      return result.data;
+      return requireSuccess(result);
     },
     enabled: !!id,
   });
 
-  const { data: transactions, isLoading: txLoading } = useQuery({
+  const { data: transactions, isLoading: txLoading, error: txError } = useQuery({
     queryKey: ["itemTransactions", id],
     queryFn: async () => {
       const result = await Almlab_warehousetransactionsService.getAll({
@@ -76,19 +77,19 @@ export default function WarehouseItemDetailPage() {
         filter: `_almlab_itemid_value eq '${id}'`,
         orderBy: ["almlab_transactiondate desc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
     enabled: !!id,
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: locationsError } = useQuery({
     queryKey: ["warehouseLocations"],
     queryFn: async () => {
       const result = await Almlab_warehouselocationsService.getAll({
         select: ["almlab_warehouselocationid", "almlab_name"],
         orderBy: ["almlab_name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
@@ -100,28 +101,30 @@ export default function WarehouseItemDetailPage() {
   );
 
   const linkedProductId = item?._almlab_productid_value;
-  const { data: linkedProduct } = useQuery({
+  const { data: linkedProduct, error: linkedProductError } = useQuery({
     queryKey: ["linkedProduct", linkedProductId],
     queryFn: async () => {
       const result = await Almlab_productsService.get(linkedProductId!);
-      return result.data;
+      return requireSuccess(result);
     },
     enabled: !!linkedProductId,
   });
 
   const createTxMutation = useMutation({
     mutationFn: async () => {
-      return Almlab_warehousetransactionsService.create({
+      const result = await Almlab_warehousetransactionsService.create({
         almlab_name: txName,
         almlab_quantity: txQuantity,
         almlab_transactiontype: Number(txType) as any,
         almlab_transactiondate: new Date().toISOString(),
         "almlab_itemid@odata.bind": `/almlab_warehouseitems(${id})`,
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["itemTransactions", id] });
       await queryClient.refetchQueries({ queryKey: ["warehouseItem", id] });
+      await queryClient.invalidateQueries({ queryKey: ["warehouseItems"] });
       toast.success("Transaction created");
       resetForm();
     },
@@ -143,8 +146,16 @@ export default function WarehouseItemDetailPage() {
       toast.error("Please fill all required fields");
       return;
     }
+    if (!Number.isSafeInteger(Number(txQuantity)) || Number(txQuantity) <= 0) {
+      toast.error("Movement quantity must be a positive whole number");
+      return;
+    }
     createTxMutation.mutate();
   };
+
+  if (itemError || txError || locationsError) {
+    return <p role="alert" className="p-6">{String(itemError || txError || locationsError)}</p>;
+  }
 
   if (itemLoading) {
     return (
@@ -191,8 +202,12 @@ export default function WarehouseItemDetailPage() {
         <BarcodeScanDialog
           itemId={id!}
           currentProductId={linkedProductId}
-          onLinked={() => queryClient.refetchQueries({ queryKey: ["warehouseItem", id] })}
+          onLinked={() => {
+            void queryClient.invalidateQueries({ queryKey: ["warehouseItem", id] });
+            void queryClient.invalidateQueries({ queryKey: ["linkedProduct"] });
+          }}
         />
+        {linkedProductError && <p role="alert">{String(linkedProductError)}</p>}
         {linkedProduct && (
           <div className="flex items-center gap-2 text-sm" data-testid="linked-product-name">
             <LinkedProductImage productId={linkedProductId!} />
@@ -387,4 +402,3 @@ export default function WarehouseItemDetailPage() {
     </div>
   );
 }
-

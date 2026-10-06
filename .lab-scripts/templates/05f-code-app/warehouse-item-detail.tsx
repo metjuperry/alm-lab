@@ -40,6 +40,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { ArrowLeft, Plus, Package, ArrowRightLeft, MapPin } from "lucide-react";
 
 export default function WarehouseItemDetailPage() {
@@ -50,16 +51,16 @@ export default function WarehouseItemDetailPage() {
   const [txQuantity, setTxQuantity] = useState("");
   const [txType, setTxType] = useState("");
 
-  const { data: item, isLoading: itemLoading } = useQuery({
+  const { data: item, isLoading: itemLoading, error: itemError } = useQuery({
     queryKey: ["warehouseItem", id],
     queryFn: async () => {
       const result = await __PASCAL___warehouseitemsService.get(id!);
-      return result.data;
+      return requireSuccess(result);
     },
     enabled: !!id,
   });
 
-  const { data: transactions, isLoading: txLoading } = useQuery({
+  const { data: transactions, isLoading: txLoading, error: txError } = useQuery({
     queryKey: ["itemTransactions", id],
     queryFn: async () => {
       const result = await __PASCAL___warehousetransactionsService.getAll({
@@ -73,19 +74,19 @@ export default function WarehouseItemDetailPage() {
         filter: `___PREFIX___itemid_value eq '${id}'`,
         orderBy: ["__PREFIX___transactiondate desc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
     enabled: !!id,
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: locationsError } = useQuery({
     queryKey: ["warehouseLocations"],
     queryFn: async () => {
       const result = await __PASCAL___warehouselocationsService.getAll({
         select: ["__PREFIX___warehouselocationid", "__PREFIX___name"],
         orderBy: ["__PREFIX___name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
@@ -98,17 +99,19 @@ export default function WarehouseItemDetailPage() {
 
   const createTxMutation = useMutation({
     mutationFn: async () => {
-      return __PASCAL___warehousetransactionsService.create({
+      const result = await __PASCAL___warehousetransactionsService.create({
         __PREFIX___name: txName,
         __PREFIX___quantity: txQuantity,
         __PREFIX___transactiontype: Number(txType) as any,
         __PREFIX___transactiondate: new Date().toISOString(),
         "__PREFIX___itemid@odata.bind": `/__PREFIX___warehouseitems(${id})`,
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["itemTransactions", id] });
       await queryClient.refetchQueries({ queryKey: ["warehouseItem", id] });
+      await queryClient.invalidateQueries({ queryKey: ["warehouseItems"] });
       toast.success("Transaction created");
       resetForm();
     },
@@ -130,8 +133,16 @@ export default function WarehouseItemDetailPage() {
       toast.error("Please fill all required fields");
       return;
     }
+    if (!Number.isSafeInteger(Number(txQuantity)) || Number(txQuantity) <= 0) {
+      toast.error("Movement quantity must be a positive whole number");
+      return;
+    }
     createTxMutation.mutate();
   };
+
+  if (itemError || txError || locationsError) {
+    return <p role="alert" className="p-6">{String(itemError || txError || locationsError)}</p>;
+  }
 
   if (itemLoading) {
     return (
