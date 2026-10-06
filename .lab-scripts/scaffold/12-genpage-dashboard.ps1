@@ -32,7 +32,7 @@ Write-Host "`n── Generative Page: Warehouse Dashboard ──" -ForegroundCol
 #                            Scaffold GenPage Project
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
-txc workspace component create pp-page-generative `
+Invoke-LabNative txc workspace component create pp-page-generative `
     --output "src/GenPages.Dashboard" `
     --param "Name=warehousedashboard" `
     --param "DisplayName=Warehouse Dashboard"
@@ -85,7 +85,7 @@ Write-Host "  ✓ genpage.config.json data sources registered" -ForegroundColor 
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
 cd src/Solutions.UI
-dotnet add "./Solutions.UI.csproj" reference "../GenPages.Dashboard/$csprojRelPath"
+Invoke-LabNative dotnet add "./Solutions.UI.csproj" reference "../GenPages.Dashboard/$csprojRelPath"
 cd ../..
 Write-Host "  ✓ ProjectReference: GenPages.Dashboard → Solutions.UI" -ForegroundColor Green
 
@@ -93,7 +93,7 @@ Write-Host "  ✓ ProjectReference: GenPages.Dashboard → Solutions.UI" -Foregr
 #                       Sitemap Subarea (PageType=genpage)
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
-txc workspace component create pp-sitemap-subarea `
+Invoke-LabNative txc workspace component create pp-sitemap-subarea `
     --output "src/Solutions.UI" `
     --param "PageType=genpage" `
     --param "Title=Dashboard" `
