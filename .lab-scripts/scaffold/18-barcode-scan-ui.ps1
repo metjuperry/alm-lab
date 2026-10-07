@@ -58,11 +58,11 @@ import { ${prefixPascal}_productsService } from "@/generated/services/${prefixPa
         $mutationAnchor = '  const createTxMutation = useMutation({'
         $mutationReplacement = @"
   const linkedProductId = item?._${PublisherPrefix}_productid_value;
-  const { data: linkedProduct } = useQuery({
+  const { data: linkedProduct, error: linkedProductError } = useQuery({
     queryKey: ["linkedProduct", linkedProductId],
     queryFn: async () => {
       const result = await ${prefixPascal}_productsService.get(linkedProductId!);
-      return result.data;
+      return requireSuccess(result);
     },
     enabled: !!linkedProductId,
   });
@@ -77,8 +77,12 @@ $mutationAnchor
         <BarcodeScanDialog
           itemId={id!}
           currentProductId={linkedProductId}
-          onLinked={() => queryClient.refetchQueries({ queryKey: ["warehouseItem", id] })}
+          onLinked={() => {
+            void queryClient.invalidateQueries({ queryKey: ["warehouseItem", id] });
+            void queryClient.invalidateQueries({ queryKey: ["linkedProduct"] });
+          }}
         />
+        {linkedProductError && <p role="alert">{String(linkedProductError)}</p>}
         {linkedProduct && (
           <div className="flex items-center gap-2 text-sm" data-testid="linked-product-name">
             <LinkedProductImage productId={linkedProductId!} />

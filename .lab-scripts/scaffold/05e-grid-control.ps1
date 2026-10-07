@@ -67,10 +67,10 @@ Write-Host "`n── Scripts.UI: GridApi ──" -ForegroundColor Cyan
 # so nothing from these packages ends up in the bundle. The two extra @types are
 # peer type-dependencies of @talxis/client-libraries' declarations.
 cd src/Scripts.UI
-npm pkg set "devDependencies.@talxis/client-libraries=^1.2606.5" `
+Invoke-LabNative npm pkg set "devDependencies.@talxis/client-libraries=^1.2606.5" `
             "devDependencies.@types/powerapps-component-framework=^1.3.15" `
             "devDependencies.@microsoft/microsoft-graph-types=^2.40.0"
-npm install --no-audit --no-fund | Out-Null
+Invoke-LabNative npm install --no-audit --no-fund | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Host "  ⚠ npm install had issues (exit code: $LASTEXITCODE)" -ForegroundColor Yellow }
 cd ../..
 Write-Host "  ✓ @talxis/client-libraries typings (devDependency)" -ForegroundColor Green
@@ -92,7 +92,7 @@ Write-Host "  ✓ GridCustomizer.ts (GridApi bridge + LocationForm)" -Foreground
 
 # The template's post-scripts add the Library to <formLibraries> — required, because
 # the form must load the web resource before the PCF can call into it.
-txc workspace component create pp-form-event-handler `
+Invoke-LabNative txc workspace component create pp-form-event-handler `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$locationFormGuid" `
@@ -119,7 +119,7 @@ Write-Host "`n── Grid overlay (txc workspace control attach) ──" -Foregr
 # Columns: group by category, sum the quantity, keep reorder point available but hidden.
 $columnsJson = "[ { `"name`": `"${prefix}_category`", `"grouping`": { `"isGrouped`": true } }, { `"name`": `"${prefix}_availablequantity`", `"aggregation`": { `"aggregationFunction`": `"sum`" } }, { `"name`": `"${prefix}_reorderpoint`", `"isHidden`": true } ]"
 
-txc workspace control attach `
+Invoke-LabNative txc workspace control attach `
     --output "src/Solutions.UI" `
     --entity "${prefix}_warehouselocation" `
     --form-id $locationFormGuid `

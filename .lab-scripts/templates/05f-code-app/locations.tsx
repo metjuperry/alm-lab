@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { MapPin, Plus, RefreshCw } from "lucide-react";
 
 export default function LocationsPage() {
@@ -48,17 +49,17 @@ export default function LocationsPage() {
         ],
         orderBy: ["__PREFIX___name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
-  const { data: items } = useQuery({
+  const { data: items, error: lookupError } = useQuery({
     queryKey: ["itemsByLocation"],
     queryFn: async () => {
       const result = await __PASCAL___warehouseitemsService.getAll({
         select: ["__PREFIX___warehouseitemid", "___PREFIX___locationid_value"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
@@ -70,12 +71,13 @@ export default function LocationsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return __PASCAL___warehouselocationsService.create({
+      const result = await __PASCAL___warehouselocationsService.create({
         __PREFIX___name: name,
         __PREFIX___address: address,
         __PREFIX___capacity: capacity,
         __PREFIX___isactive: true,
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["warehouseLocationsList"] });
@@ -105,6 +107,7 @@ export default function LocationsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {lookupError && <p role="alert">{String(lookupError)}</p>}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <MapPin className="h-8 w-8 text-primary" />

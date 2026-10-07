@@ -80,13 +80,7 @@ Set-LabValue 'mainRulesetName' $rulesetRecord.name
 
 }
 
-# Step 3: Demonstrate the loop — create a topic branch for upcoming work.
-Push-Location $LabRoot
-try {
-    git checkout main --quiet 2>$null
-    git checkout -B "setup/runtime" --quiet 2>$null
-    Write-Ok "Created topic branch: setup/runtime"
-} finally { Pop-Location }
+# Save-Checkpoint creates the review branch without replacing existing branches.
 
 Save-Checkpoint -Id "cp03" -Message "Add main branch protection for pull request workflow" -Body @'
 Protect the main branch so warehouse app changes land through pull requests instead of direct pushes. This establishes the review loop before the first functional features are added.

@@ -72,5 +72,47 @@ namespace Tests.Plugins
             // Inbound transactions add stock, so quantity above availability is fine.
             Execute(MakeTransaction(item.Id, quantity: 100, Inbound));
         }
+
+        [TestMethod]
+        public void Direct_Stock_Update_Is_Rejected()
+        {
+            var item = SeedItem(10);
+            var target = new Entity("__PREFIX___warehouseitem", item.Id);
+            target["__PREFIX___availablequantity"] = 999;
+            var context = _context.GetDefaultPluginContext();
+            context.MessageName = "Update";
+            context.PrimaryEntityName = target.LogicalName;
+            context.InputParameters["Target"] = target;
+            Assert.ThrowsExactly<InvalidPluginExecutionException>(() =>
+                _context.ExecutePluginWith(context, new ValidateWarehouseTransactionPlugin("", "")));
+        }
+
+        [TestMethod]
+        public void Unchanged_Stock_Is_Removed_From_Catalogue_Updates()
+        {
+            var item = SeedItem(10);
+            var target = new Entity("__PREFIX___warehouseitem", item.Id);
+            target["__PREFIX___availablequantity"] = 10;
+            target["__PREFIX___name"] = "Updated grocery name";
+            var context = _context.GetDefaultPluginContext();
+            context.MessageName = "Update";
+            context.PrimaryEntityName = target.LogicalName;
+            context.InputParameters["Target"] = target;
+            _context.ExecutePluginWith(context, new ValidateWarehouseTransactionPlugin("", ""));
+            Assert.IsFalse(target.Contains("__PREFIX___availablequantity"));
+            Assert.AreEqual("Updated grocery name", target["__PREFIX___name"]);
+        }
+
+        [TestMethod]
+        public void New_Item_Starts_At_Zero()
+        {
+            var target = new Entity("__PREFIX___warehouseitem", Guid.NewGuid());
+            target["__PREFIX___availablequantity"] = 0;
+            var context = _context.GetDefaultPluginContext();
+            context.MessageName = "Create";
+            context.PrimaryEntityName = target.LogicalName;
+            context.InputParameters["Target"] = target;
+            _context.ExecutePluginWith(context, new ValidateWarehouseTransactionPlugin("", ""));
+        }
     }
 }

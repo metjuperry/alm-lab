@@ -26,7 +26,7 @@ Write-Step "CP08 — Security roles"
 Push-Location $LabRoot
 try {
     . "$PSScriptRoot/scaffold/04-security.ps1"
-    dotnet build --nologo --verbosity quiet
+    Invoke-LabNative dotnet build --nologo --verbosity quiet
     if ($LASTEXITCODE -ne 0) { Write-Err "dotnet build failed"; exit 1 }
 } finally { Pop-Location }
 

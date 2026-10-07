@@ -128,10 +128,13 @@
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="91" id="{3009dd97-62c1-4615-8e4b-d535f61bf80d}" schemaName="PluginsWarehouse, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6b1a738f150fa835" behavior="0" />
       <RootComponent type="91" id="{8424e33c-0946-4da3-a03e-350921fc1083}" schemaName="PluginsWarehouse, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6b1a738f150fa835" behavior="0" />
       <RootComponent type="92" id="{09bfcdfa-8c90-4150-99a3-8dfa7047647c}" behavior="0" />
       <RootComponent type="92" id="{d4bf5161-e4dc-4b7b-af7d-1066e7d0a4ec}" behavior="0" />
+      <RootComponent type="92" id="{12190914-84f2-4269-a33d-e0ca4a86c2a4}" behavior="0" />
+      <RootComponent type="92" id="{5cb4260f-9287-42a7-b8ce-15cab5958b2a}" behavior="0" />
+      <RootComponent type="92" id="{dce54515-5d8a-4f53-afc2-cc3d545832f8}" behavior="0" />
+      <RootComponent type="92" id="{3457c88a-f2f2-4f1b-816a-93ba13488a03}" behavior="0" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>

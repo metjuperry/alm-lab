@@ -35,7 +35,7 @@ Write-Host "`n── Code App: Warehouse Picking ──" -ForegroundColor Cyan
 # Pin AppName so the CanvasApp schema name doesn't depend on the project folder name.
 $appName = "warehousepicking"
 
-txc workspace component create pp-app-code `
+Invoke-LabNative txc workspace component create pp-app-code `
     --output "src/Apps.WarehousePicking" `
     --param "DisplayName=Warehouse Picking" `
     --param "AppName=$appName"
@@ -45,11 +45,11 @@ Write-Host "  ✓ Apps.WarehousePicking project created" -ForegroundColor Green
 Write-Host "  ℹ CanvasApp schema name: ${PublisherPrefix}_$appName" -ForegroundColor DarkGray
 
 # Add the code app project to the Visual Studio solution file (run from repo root)
-dotnet sln add src/Apps.WarehousePicking
+Invoke-LabNative dotnet sln add src/Apps.WarehousePicking
 if ($LASTEXITCODE -ne 0) { Write-Host "  ✗ dotnet sln add Apps.WarehousePicking failed" -ForegroundColor Red; throw "dotnet sln add Apps.WarehousePicking failed" }
 
 # Link the code app straight into Solutions.UI — no dedicated solution needed
-dotnet add "src/Solutions.UI/Solutions.UI.csproj" reference "src/Apps.WarehousePicking/Apps.WarehousePicking.csproj"
+Invoke-LabNative dotnet add "src/Solutions.UI/Solutions.UI.csproj" reference "src/Apps.WarehousePicking/Apps.WarehousePicking.csproj"
 if ($LASTEXITCODE -ne 0) { Write-Host "  ✗ ProjectReference Apps.WarehousePicking → Solutions.UI failed" -ForegroundColor Red; throw "ProjectReference Apps.WarehousePicking to Solutions.UI failed" }
 
 Write-Host "  ✓ ProjectReference: Apps.WarehousePicking → Solutions.UI" -ForegroundColor Green
@@ -71,7 +71,7 @@ Write-Host "`n── Code App Data Sources ──" -ForegroundColor Cyan
 # One pp-app-code-data invocation per table — three tables, three data sources.
 
 # Warehouse Items — items list page, item detail page, item lookup in transaction forms
-txc workspace component create pp-app-code-data `
+Invoke-LabNative txc workspace component create pp-app-code-data `
     --output "src/Apps.WarehousePicking" `
     --param "EntityLogicalName=${PublisherPrefix}_warehouseitem" `
     --param "ModelSolutionPath=../Solutions.DataModel"
@@ -79,7 +79,7 @@ if ($LASTEXITCODE -ne 0) { Write-Host "  ✗ Data source ${PublisherPrefix}_ware
 Write-Host "  ✓ Data source: ${PublisherPrefix}_warehouseitem" -ForegroundColor Green
 
 # Warehouse Transactions — transactions list page, per-item transactions, create dialogs
-txc workspace component create pp-app-code-data `
+Invoke-LabNative txc workspace component create pp-app-code-data `
     --output "src/Apps.WarehousePicking" `
     --param "EntityLogicalName=${PublisherPrefix}_warehousetransaction" `
     --param "ModelSolutionPath=../Solutions.DataModel"
@@ -87,7 +87,7 @@ if ($LASTEXITCODE -ne 0) { Write-Host "  ✗ Data source ${PublisherPrefix}_ware
 Write-Host "  ✓ Data source: ${PublisherPrefix}_warehousetransaction" -ForegroundColor Green
 
 # Warehouse Locations — location names on the items list/detail, location pick on New Item
-txc workspace component create pp-app-code-data `
+Invoke-LabNative txc workspace component create pp-app-code-data `
     --output "src/Apps.WarehousePicking" `
     --param "EntityLogicalName=${PublisherPrefix}_warehouselocation" `
     --param "ModelSolutionPath=../Solutions.DataModel"
@@ -115,6 +115,7 @@ $uiTokens = @{ PREFIX = $PublisherPrefix; PASCAL = $prefixPascal }
 
 foreach ($file in @(
     @{ Template = "optionSets.ts";             Target = "utils/optionSets.ts" },
+    @{ Template = "operationResult.ts";        Target = "utils/operationResult.ts" },
     @{ Template = "router.tsx";                Target = "router.tsx" },
     @{ Template = "_layout.tsx";               Target = "pages/_layout.tsx" },
     @{ Template = "warehouse-items.tsx";       Target = "pages/warehouse-items.tsx" },

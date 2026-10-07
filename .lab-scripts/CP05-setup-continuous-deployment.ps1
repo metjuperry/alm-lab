@@ -25,6 +25,7 @@ $repo    = Get-LabValue 'repo'
 $testUrl = Get-LabValue 'testEnvUrl'
 if (-not $repo -and -not $env:LAB_LOCAL_MODE) { $originUrl = git -C $LabRoot remote get-url origin 2>$null; if ($originUrl -match 'github\.com[:/](.+?)(?:\.git)?$') { $repo = $Matches[1] }; Set-LabValue 'repo' $repo }
 if (-not $testUrl) { Write-Err "Run CP04 first (Test environment URL missing)"; exit 1 }
+Assert-LabProfile test
 
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would verify Azure sign-in, create an Entra app"
@@ -43,6 +44,8 @@ if (-not $tenantId) {
     Set-LabValue 'tenantId' $tenantId
 }
 Write-Ok "Azure: tenant $tenantId"
+$liveTenant = Invoke-LabNative az account show --query tenantId -o tsv
+if ($liveTenant -ne $tenantId) { throw 'Azure is signed into a different tenant from CP01. Reconcile authentication before creating deployment resources.' }
 
 # Step 2: App registration + service principal.
 $appName = "wm-deploy-$rid"
@@ -70,13 +73,21 @@ if (-not (az ad sp show --id $appId --query id -o tsv 2>$null)) {
 
 # Step 3: Federated credential trusting main of this repo.
 $fedCredentialName = "github-main"
+$subject = Get-LabOidcSubject -Repository $repo
 $fed = @{ name=$fedCredentialName; issuer="https://token.actions.githubusercontent.com";
-          subject="repo:$repo`:ref:refs/heads/main"; audiences=@("api://AzureADTokenExchange") } | ConvertTo-Json
+          subject=$subject; audiences=@("api://AzureADTokenExchange") } | ConvertTo-Json
 $tmp = New-TemporaryFile; Set-Content $tmp $fed -Encoding UTF8
-if (-not (az ad app federated-credential list --id $appId --query "[?name=='$fedCredentialName'] | [0].name" -o tsv 2>$null)) {
-    az ad app federated-credential create --id $appId --parameters "@$tmp" 2>&1 | Out-Null
+try {
+    $existingCredential = Invoke-LabNative az @('ad', 'app', 'federated-credential', 'list', '--id', $appId, '--query', "[?name=='$fedCredentialName'] | [0].id", '-o', 'tsv')
+    if ($existingCredential) {
+        Invoke-LabNative az @('ad', 'app', 'federated-credential', 'update', '--id', $appId, '--federated-credential-id', $existingCredential, '--parameters', "@$tmp") | Out-Null
+    } else {
+        Invoke-LabNative az @('ad', 'app', 'federated-credential', 'create', '--id', $appId, '--parameters', "@$tmp") | Out-Null
+    }
+} finally {
+    Remove-Item $tmp
 }
-Remove-Item $tmp; Write-Ok "Federated credential (repo:${repo}:ref:refs/heads/main)"
+Write-Ok "Federated credential ($subject)"
 
 # Step 4: Add SP as application user with System Administrator role in Test env.
 # We use the Dataverse OData API directly (pac admin assign-user requires a pac
@@ -114,9 +125,9 @@ Write-Ok "Service principal added to Test environment as application user (Syste
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would run 'gh secret set AZURE_CLIENT_ID/AZURE_TENANT_ID/DATAVERSE_TEST_URL'"
 } else {
-    gh secret set AZURE_CLIENT_ID    --repo $repo --body $appId
-    gh secret set AZURE_TENANT_ID    --repo $repo --body $tenantId
-    gh secret set DATAVERSE_TEST_URL --repo $repo --body $testUrl
+    Invoke-LabNative gh secret set AZURE_CLIENT_ID    --repo $repo --body $appId
+    Invoke-LabNative gh secret set AZURE_TENANT_ID    --repo $repo --body $tenantId
+    Invoke-LabNative gh secret set DATAVERSE_TEST_URL --repo $repo --body $testUrl
     Write-Ok "Secrets set: AZURE_CLIENT_ID, AZURE_TENANT_ID, DATAVERSE_TEST_URL"
 }
 
@@ -124,7 +135,7 @@ if ($env:LAB_LOCAL_MODE) {
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would run 'gh api -X PUT repos/<repo>/actions/permissions'"
 } else {
-    gh api -X PUT "repos/$repo/actions/permissions" -F enabled=true -f allowed_actions=all 2>&1 | Out-Null
+    Invoke-LabNative gh api -X PUT "repos/$repo/actions/permissions" -F enabled=true -f allowed_actions=all 2>&1 | Out-Null
     Write-Ok "GitHub Actions enabled on the fork"
 }
 

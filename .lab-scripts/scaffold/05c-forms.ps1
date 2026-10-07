@@ -20,7 +20,7 @@ $warehouseitemFormGuid = [guid]::NewGuid()
 $warehousetransactionFormGuid = [guid]::NewGuid()
 
 # Warehouse Location — main form
-txc workspace component create pp-entity-form `
+Invoke-LabNative txc workspace component create pp-entity-form `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
@@ -29,7 +29,7 @@ txc workspace component create pp-entity-form `
 Write-Host "  ✓ Form: warehouselocation (main)" -ForegroundColor Green
 
 # Warehouse Item — main form
-txc workspace component create pp-entity-form `
+Invoke-LabNative txc workspace component create pp-entity-form `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
@@ -38,7 +38,7 @@ txc workspace component create pp-entity-form `
 Write-Host "  ✓ Form: warehouseitem (main)" -ForegroundColor Green
 
 # Warehouse Transaction — main form
-txc workspace component create pp-entity-form `
+Invoke-LabNative txc workspace component create pp-entity-form `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
@@ -47,7 +47,7 @@ txc workspace component create pp-entity-form `
 Write-Host "  ✓ Form: warehousetransaction (main)" -ForegroundColor Green
 
 # Register forms as app components
-txc workspace component create pp-app-model-component `
+Invoke-LabNative txc workspace component create pp-app-model-component `
     --output "src/Solutions.UI" `
     --param "EntityType=Form" `
     --param "ComponentId=$warehouselocationFormGuid" `
@@ -55,7 +55,7 @@ txc workspace component create pp-app-model-component `
 
 Write-Host "  ✓ App component: warehouselocation form" -ForegroundColor Green
 
-txc workspace component create pp-app-model-component `
+Invoke-LabNative txc workspace component create pp-app-model-component `
     --output "src/Solutions.UI" `
     --param "EntityType=Form" `
     --param "ComponentId=$warehouseitemFormGuid" `
@@ -63,7 +63,7 @@ txc workspace component create pp-app-model-component `
 
 Write-Host "  ✓ App component: warehouseitem form" -ForegroundColor Green
 
-txc workspace component create pp-app-model-component `
+Invoke-LabNative txc workspace component create pp-app-model-component `
     --output "src/Solutions.UI" `
     --param "EntityType=Form" `
     --param "ComponentId=$warehousetransactionFormGuid" `
@@ -77,7 +77,7 @@ Write-Host "  ✓ App component: warehousetransaction form" -ForegroundColor Gre
 
 Write-Host "`n── Form Tabs ──" -ForegroundColor Cyan
 
-txc workspace component create pp-form-tab `
+Invoke-LabNative txc workspace component create pp-form-tab `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
@@ -87,7 +87,7 @@ txc workspace component create pp-form-tab `
 
 Write-Host "  ✓ Tab: warehouselocation → General" -ForegroundColor Green
 
-txc workspace component create pp-form-tab `
+Invoke-LabNative txc workspace component create pp-form-tab `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
@@ -97,7 +97,7 @@ txc workspace component create pp-form-tab `
 
 Write-Host "  ✓ Tab: warehouseitem → General" -ForegroundColor Green
 
-txc workspace component create pp-form-tab `
+Invoke-LabNative txc workspace component create pp-form-tab `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
@@ -115,43 +115,43 @@ Write-Host "`n── Form Columns, Sections, Rows ──" -ForegroundColor Cyan
 
 # --- Warehouse Location: 1 column, 1 section, 5 rows (name, capacity, address, isactive, notes) ---
 
-txc workspace component create pp-form-column `
+Invoke-LabNative txc workspace component create pp-form-column `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-section `
+Invoke-LabNative txc workspace component create pp-form-section `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouselocationFormGuid" `
@@ -161,85 +161,85 @@ Write-Host "  ✓ warehouselocation: column, section, 5 rows" -ForegroundColor G
 
 # --- Warehouse Item: 1 column, 1 section, 12 rows ---
 
-txc workspace component create pp-form-column `
+Invoke-LabNative txc workspace component create pp-form-column `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-section `
+Invoke-LabNative txc workspace component create pp-form-section `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehouseitemFormGuid" `
@@ -249,73 +249,73 @@ Write-Host "  ✓ warehouseitem: column, section, 12 rows" -ForegroundColor Gree
 
 # --- Warehouse Transaction: 1 column, 1 section, 10 rows ---
 
-txc workspace component create pp-form-column `
+Invoke-LabNative txc workspace component create pp-form-column `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-section `
+Invoke-LabNative txc workspace component create pp-form-section `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-row `
+Invoke-LabNative txc workspace component create pp-form-row `
     --output "src/Solutions.UI" `
     --param "FormType=main" `
     --param "FormId=$warehousetransactionFormGuid" `
@@ -331,7 +331,7 @@ Write-Host "`n── Form Cells ──" -ForegroundColor Cyan
 
 # --- Warehouse Location cells ---
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=1" `
     --param "FormType=main" `
@@ -339,7 +339,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=2" `
     --param "FormType=main" `
@@ -347,7 +347,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=3" `
     --param "FormType=main" `
@@ -355,7 +355,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=4" `
     --param "FormType=main" `
@@ -363,7 +363,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=5" `
     --param "FormType=main" `
@@ -375,7 +375,7 @@ Write-Host "  ✓ warehouselocation cells: Name, Capacity, Address, Is Active, N
 
 # --- Warehouse Item cells ---
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=1" `
     --param "FormType=main" `
@@ -383,7 +383,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=2" `
     --param "FormType=main" `
@@ -391,7 +391,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=3" `
     --param "FormType=main" `
@@ -399,7 +399,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=4" `
     --param "FormType=main" `
@@ -407,7 +407,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=5" `
     --param "FormType=main" `
@@ -415,7 +415,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=6" `
     --param "FormType=main" `
@@ -423,7 +423,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=7" `
     --param "FormType=main" `
@@ -431,7 +431,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=8" `
     --param "FormType=main" `
@@ -439,7 +439,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=9" `
     --param "FormType=main" `
@@ -447,7 +447,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=10" `
     --param "FormType=main" `
@@ -455,7 +455,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=11" `
     --param "FormType=main" `
@@ -463,7 +463,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=12" `
     --param "FormType=main" `
@@ -475,7 +475,7 @@ Write-Host "  ✓ warehouseitem cells: Name, SKU, Available Quantity, Location, 
 
 # --- Warehouse Transaction cells ---
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=1" `
     --param "FormType=main" `
@@ -483,7 +483,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=2" `
     --param "FormType=main" `
@@ -491,7 +491,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=3" `
     --param "FormType=main" `
@@ -499,7 +499,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=4" `
     --param "FormType=main" `
@@ -507,7 +507,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=5" `
     --param "FormType=main" `
@@ -515,7 +515,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=6" `
     --param "FormType=main" `
@@ -523,7 +523,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=7" `
     --param "FormType=main" `
@@ -531,7 +531,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=8" `
     --param "FormType=main" `
@@ -539,7 +539,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=9" `
     --param "FormType=main" `
@@ -547,7 +547,7 @@ txc workspace component create pp-form-cell `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-cell `
+Invoke-LabNative txc workspace component create pp-form-cell `
     --output "src/Solutions.UI" `
     --param "RowIndex=10" `
     --param "FormType=main" `
@@ -565,7 +565,7 @@ Write-Host "`n── Form Controls ──" -ForegroundColor Cyan
 
 # --- Warehouse Location controls ---
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=1" `
@@ -574,7 +574,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=WholeNumber" `
     --param "RowIndex=2" `
@@ -583,7 +583,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=3" `
@@ -592,7 +592,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=OptionSet" `
     --param "RowIndex=4" `
@@ -601,7 +601,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouselocationFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=MultilineText" `
     --param "RowIndex=5" `
@@ -614,7 +614,7 @@ Write-Host "  ✓ warehouselocation controls: name, capacity, address, isactive,
 
 # --- Warehouse Item controls ---
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=1" `
@@ -623,7 +623,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=2" `
@@ -632,7 +632,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=WholeNumber" `
     --param "RowIndex=3" `
@@ -641,7 +641,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Lookup" `
     --param "RowIndex=4" `
@@ -650,7 +650,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=MultilineText" `
     --param "RowIndex=5" `
@@ -659,7 +659,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Currency" `
     --param "RowIndex=6" `
@@ -668,7 +668,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Decimal" `
     --param "RowIndex=7" `
@@ -677,7 +677,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=OptionSet" `
     --param "RowIndex=8" `
@@ -686,7 +686,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=OptionSet" `
     --param "RowIndex=9" `
@@ -695,7 +695,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=DateTime" `
     --param "RowIndex=10" `
@@ -704,7 +704,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=11" `
@@ -713,7 +713,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehouseitemFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=WholeNumber" `
     --param "RowIndex=12" `
@@ -726,7 +726,7 @@ Write-Host "  ✓ warehouseitem controls: name, sku, availablequantity, location
 
 # --- Warehouse Transaction controls ---
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=1" `
@@ -735,7 +735,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Lookup" `
     --param "RowIndex=2" `
@@ -744,7 +744,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=WholeNumber" `
     --param "RowIndex=3" `
@@ -753,7 +753,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=OptionSet" `
     --param "RowIndex=4" `
@@ -762,7 +762,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=DateTime" `
     --param "RowIndex=5" `
@@ -771,7 +771,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=MultilineText" `
     --param "RowIndex=6" `
@@ -780,7 +780,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Currency" `
     --param "RowIndex=7" `
@@ -789,7 +789,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=OptionSet" `
     --param "RowIndex=8" `
@@ -798,7 +798,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=9" `
@@ -807,7 +807,7 @@ txc workspace component create pp-form-control `
     --param "FormId=$warehousetransactionFormGuid" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction"
 
-txc workspace component create pp-form-control `
+Invoke-LabNative txc workspace component create pp-form-control `
     --output "src/Solutions.UI" `
     --param "ControlType=Text" `
     --param "RowIndex=10" `

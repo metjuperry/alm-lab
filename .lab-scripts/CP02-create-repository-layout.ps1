@@ -37,13 +37,19 @@ try {
     # Step 1: NuGet feed (TALXIS DevKit build SDK + templates come from nuget.org)
     Copy-Item "$PSScriptRoot/workflows/NuGet.config" "NuGet.config" -Force
     Write-Ok "NuGet.config"
+    New-Item -ItemType Directory '.config' -Force | Out-Null
+    Copy-Item "$PSScriptRoot/build/dotnet-tools.json" '.config/dotnet-tools.json' -Force
+    Set-Content 'Directory.Build.targets' '<Project><Import Project="$(MSBuildThisFileDirectory).lab-scripts/build/Directory.Build.targets" /></Project>'
+    Invoke-LabNative dotnet tool restore
+    $ignoreRules = @(Get-Content '.gitignore' -ErrorAction Stop)
+    if ('node_modules/' -notin $ignoreRules) { Add-Content '.gitignore' "`n# Restored dependencies are not lab source`nnode_modules/" }
 
     # Step 2: Visual Studio solution (modern .slnx) to track all projects in the monorepo.
     # .slnx is the new XML solution format - human-readable and merge-friendly, unlike .sln.
     if (-not (Test-Path "$solutionName.slnx")) {
-        dotnet new sln --name $solutionName | Out-Null
+        Invoke-LabNative dotnet new sln --name $solutionName | Out-Null
         if (Test-Path "$solutionName.sln") {
-            dotnet sln "$solutionName.sln" migrate | Out-Null
+            Invoke-LabNative dotnet sln "$solutionName.sln" migrate | Out-Null
             Remove-Item "$solutionName.sln" -ErrorAction SilentlyContinue
         }
         Write-Ok "$solutionName.slnx"
