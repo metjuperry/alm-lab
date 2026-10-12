@@ -10,6 +10,19 @@
       <field displayname="Is Active" name="almlab_isactive" type="bool" customfield="true" />
     </fields>
   </entity>
+  <entity name="almlab_product" displayname="Product"
+          primaryidfield="almlab_productid" primarynamefield="almlab_name"
+          disableplugins="true">
+    <fields>
+      <field displayname="Product" name="almlab_productid" type="guid" primaryKey="true" />
+      <field displayname="Name" name="almlab_name" type="string" customfield="true" />
+      <field displayname="EAN" name="almlab_ean" type="string" customfield="true" />
+      <field displayname="Brand" name="almlab_brand" type="string" customfield="true" />
+      <field displayname="Quantity" name="almlab_quantity" type="string" customfield="true" />
+      <field displayname="Image URL" name="almlab_imageurl" type="string" customfield="true" />
+      <field displayname="Last Synced On" name="almlab_lastsyncedon" type="datetime" customfield="true" />
+    </fields>
+  </entity>
   <entity name="almlab_warehouseitem" displayname="Warehouse Item"
           primaryidfield="almlab_warehouseitemid" primarynamefield="almlab_name"
           disableplugins="true">
@@ -23,6 +36,7 @@
       <field displayname="Unit Price" name="almlab_unitprice" type="money" customfield="true" />
       <field displayname="Reorder Point" name="almlab_reorderpoint" type="number" customfield="true" />
       <field displayname="Location" name="almlab_locationid" type="entityreference" lookupType="almlab_warehouselocation" customfield="true" />
+      <field displayname="Product" name="almlab_productid" type="entityreference" lookupType="almlab_product" customfield="true" />
     </fields>
   </entity>
   <entity name="almlab_warehousetransaction" displayname="Warehouse Transaction"
@@ -34,6 +48,7 @@
       <field displayname="Item" name="almlab_itemid" type="entityreference" lookupType="almlab_warehouseitem" customfield="true" />
       <field displayname="Quantity" name="almlab_quantity" type="number" customfield="true" />
       <field displayname="Transaction Type" name="almlab_transactiontype" type="optionsetvalue" customfield="true" />
+      <field displayname="Transaction Date" name="almlab_transactiondate" type="datetime" customfield="true" />
       <field displayname="Reference Number" name="almlab_referencenumber" type="string" customfield="true" />
     </fields>
   </entity>

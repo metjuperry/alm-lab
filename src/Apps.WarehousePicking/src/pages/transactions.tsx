@@ -33,6 +33,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { ArrowRightLeft, Plus, RefreshCw } from "lucide-react";
 
 export default function TransactionsPage() {
@@ -57,11 +58,11 @@ export default function TransactionsPage() {
         ],
         orderBy: ["almlab_transactiondate desc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
-  const { data: items } = useQuery({
+  const { data: items, error: lookupError } = useQuery({
     queryKey: ["warehouseItemsLookup"],
     queryFn: async () => {
       const result = await Almlab_warehouseitemsService.getAll({
@@ -69,22 +70,24 @@ export default function TransactionsPage() {
         filter: "statecode eq 0",
         orderBy: ["almlab_name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return Almlab_warehousetransactionsService.create({
+      const result = await Almlab_warehousetransactionsService.create({
         almlab_name: txName,
         almlab_quantity: txQuantity,
         almlab_transactiontype: Number(txType) as any,
         almlab_transactiondate: new Date().toISOString(),
         "almlab_itemid@odata.bind": `/almlab_warehouseitems(${txItemId})`,
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["allTransactions"] });
+      await queryClient.invalidateQueries({ queryKey: ["warehouseItems"] });
       toast.success("Transaction created successfully");
       resetForm();
     },
@@ -112,6 +115,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {lookupError && <p role="alert">{String(lookupError)}</p>}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ArrowRightLeft className="h-8 w-8 text-primary" />
@@ -284,4 +288,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-

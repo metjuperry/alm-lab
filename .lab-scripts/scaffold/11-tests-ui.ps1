@@ -29,11 +29,11 @@ if ([string]::IsNullOrWhiteSpace($PublisherPrefix)) {
 
 if (-not (Get-LabValue 'testsUiScaffolded')) {
 
-txc workspace component create pp-test-ui `
+Invoke-LabNative txc workspace component create pp-test-ui `
     --output "src/Tests.UI"
 
 # Add to solution
-dotnet sln add src/Tests.UI/Tests.UI.csproj
+Invoke-LabNative dotnet sln add src/Tests.UI/Tests.UI.csproj
 
 Write-Host "  ✓ Tests.UI project created" -ForegroundColor Green
 
@@ -41,7 +41,7 @@ Write-Host "  ✓ Tests.UI project created" -ForegroundColor Green
 #                              Sample Feature File
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
-txc workspace component create pp-test-ui-feature `
+Invoke-LabNative txc workspace component create pp-test-ui-feature `
     --param "name=WarehouseItemNavigation" `
     --output "src/Tests.UI"
 
@@ -66,7 +66,7 @@ Write-Host "  ✓ Feature scenario written" -ForegroundColor Green
 # also have their own sitemap subarea and view (see scaffold/05b-sitemap.ps1 and
 # 05d-views-subgrids.ps1), so they get the same coverage rather than being left untested.
 
-txc workspace component create pp-test-ui-feature `
+Invoke-LabNative txc workspace component create pp-test-ui-feature `
     --param "name=WarehouseLocationNavigation" `
     --output "src/Tests.UI"
 # Full source: .lab-scripts/templates/11-tests-ui/WarehouseLocationNavigation.feature
@@ -75,7 +75,7 @@ Expand-LabTemplate -Path "11-tests-ui/WarehouseLocationNavigation.feature" `
     -Tokens @{ PREFIX = $PublisherPrefix }
 Write-Host "  ✓ Sample feature: WarehouseLocationNavigation.feature" -ForegroundColor Green
 
-txc workspace component create pp-test-ui-feature `
+Invoke-LabNative txc workspace component create pp-test-ui-feature `
     --param "name=WarehouseTransactionNavigation" `
     --output "src/Tests.UI"
 # Full source: .lab-scripts/templates/11-tests-ui/WarehouseTransactionNavigation.feature
@@ -85,7 +85,7 @@ Expand-LabTemplate -Path "11-tests-ui/WarehouseTransactionNavigation.feature" `
 Write-Host "  ✓ Sample feature: WarehouseTransactionNavigation.feature" -ForegroundColor Green
 
 # One cross-area scenario as a lightweight sitemap regression check — same steps, chained.
-txc workspace component create pp-test-ui-feature `
+Invoke-LabNative txc workspace component create pp-test-ui-feature `
     --param "name=WarehouseCrossAreaNavigation" `
     --output "src/Tests.UI"
 # Full source: .lab-scripts/templates/11-tests-ui/WarehouseCrossAreaNavigation.feature
@@ -103,7 +103,7 @@ Write-Host "  ✓ Sample feature: WarehouseCrossAreaNavigation.feature" -Foregro
 # scenario needs its own steps, kept in StepDefinitions/ to signal "ours, not
 # template-shipped" — same split the pp-test-ui template itself uses for genux/custom pages.
 
-txc workspace component create pp-test-ui-feature `
+Invoke-LabNative txc workspace component create pp-test-ui-feature `
     --param "name=WarehousePicking" `
     --output "src/Tests.UI"
 
@@ -120,6 +120,9 @@ New-Item -ItemType Directory -Path "src/Tests.UI/StepDefinitions" -Force | Out-N
 # Full source: .lab-scripts/templates/11-tests-ui/WarehousePickingSteps.cs
 Expand-LabTemplate -Path "11-tests-ui/WarehousePickingSteps.cs" `
     -Destination "src/Tests.UI/StepDefinitions/WarehousePickingSteps.cs"
+Expand-LabTemplate -Path "11-tests-ui/GroceryFixture.cs" `
+    -Destination "src/Tests.UI/StepDefinitions/GroceryFixture.cs" `
+    -Tokens @{ PREFIX = $PublisherPrefix }
 
 Write-Host "  ✓ Feature scenario written: WarehousePicking.feature + custom steps" -ForegroundColor Green
 
@@ -160,7 +163,7 @@ Expand-LabTemplate -Path "11-tests-ui/Authentication.feature" `
 # the rest of NavigationSteps.cs stays whatever the template ships; the step *text* is
 # untouched, so the frozen vocabulary test and every feature file still hold.
 $navigationSteps = "src/Tests.UI/Support/Bindings/NavigationSteps.cs"
-$navigation = Get-Content -Raw -LiteralPath $navigationSteps
+$navigation = (Get-Content -Raw -LiteralPath $navigationSteps).Replace("`r`n", "`n")
 $loginStub = @'
     [Given("I am logged in as {string}")]
     public Task GivenIAmLoggedInAs(string profile)
@@ -201,6 +204,7 @@ Add-Content -LiteralPath "src/Tests.UI/.gitignore" -Value @"
 "@
 
 Write-Host "  ✓ Authentication: .env-backed sign-in, session cache, TOTP for MFA" -ForegroundColor Green
+Expand-LabTemplate -Path "11-tests-ui/README.md" -Destination "src/Tests.UI/README.md"
 
 # Drop the Calculator sample that ships with the templates. This runs after every
 # pp-test-ui-feature call, not just the first: the sample reappears, and its four steps have
@@ -245,7 +249,7 @@ Write-Host "  ✓ appsettings.json configured" -ForegroundColor Green
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
 Write-Host "  → Building Tests.UI..." -ForegroundColor White
-dotnet build src/Tests.UI/Tests.UI.csproj --nologo --verbosity quiet
+Invoke-LabNative dotnet build src/Tests.UI/Tests.UI.csproj --nologo --verbosity quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Build succeeded" -ForegroundColor Green
 } else {
@@ -261,14 +265,14 @@ $tfm = if (Test-Path $debugDir) {
 Write-Host "  → Installing Playwright browsers (TFM: $tfm)..." -ForegroundColor White
 $playwrightScript = "src/Tests.UI/bin/Debug/$tfm/playwright.ps1"
 if (Test-Path $playwrightScript) {
-    pwsh $playwrightScript install chromium
+    Invoke-LabNative pwsh $playwrightScript install chromium
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  ✓ Playwright browsers installed" -ForegroundColor Green
     } else {
-        Write-Host "  ⚠ Playwright install had issues (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
+        throw "Playwright browser installation failed (exit $LASTEXITCODE)."
     }
 } else {
-    Write-Host "  ⚠ playwright.ps1 not found at $playwrightScript — run dotnet build first" -ForegroundColor Yellow
+    throw "playwright.ps1 not found at $playwrightScript. Check the test project's build output."
 }
 
 # Marks the whole block done — checked instead of Test-Path on the csproj so a re-run after
@@ -279,4 +283,3 @@ Set-LabValue 'testsUiScaffolded' $true
 } else {
     Write-Host "  ✓ Tests.UI (exists)" -ForegroundColor Green
 }
-

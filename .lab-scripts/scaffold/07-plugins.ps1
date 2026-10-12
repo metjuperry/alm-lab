@@ -15,12 +15,12 @@
 
 if (-not (Get-LabValue 'pluginsScaffolded')) {
 
-txc workspace component create pp-plugin `
+Invoke-LabNative txc workspace component create pp-plugin `
     --output "src/Plugins.Warehouse" `
     --param "PublisherName=$PublisherName" `
     --param "Company=$PublisherName"
 
-dotnet sln add src/Plugins.Warehouse
+Invoke-LabNative dotnet sln add src/Plugins.Warehouse
 
 Write-Host "  ✓ Plugins.Warehouse project" -ForegroundColor Green
 
@@ -43,6 +43,9 @@ Expand-LabTemplate -Path "07-plugins/SubtractQuantityPlugin.cs" `
     -Destination "src/Plugins.Warehouse/SubtractQuantityPlugin.cs" `
     -Tokens @{ PREFIX = $PublisherPrefix }
 Write-Host "  ✓ SubtractQuantityPlugin.cs" -ForegroundColor Green
+Expand-LabTemplate -Path "07-plugins/WarehouseStock.cs" `
+    -Destination "src/Plugins.Warehouse/WarehouseStock.cs" `
+    -Tokens @{ PREFIX = $PublisherPrefix }
 
 # ──────────────────────────────────────────────────────────────────────────────────────────
 #                              Build Plugin Project
@@ -50,14 +53,14 @@ Write-Host "  ✓ SubtractQuantityPlugin.cs" -ForegroundColor Green
 
 Write-Host "  → Building Plugins.Warehouse..." -ForegroundColor White
 cd src/Plugins.Warehouse
-dotnet build --nologo --verbosity quiet
+Invoke-LabNative dotnet build --nologo --verbosity quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Plugin build succeeded" -ForegroundColor Green
 } else {
     Write-Host "  ⚠ Plugin build had issues (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
 }
 
-dotnet publish --nologo --verbosity quiet
+Invoke-LabNative dotnet publish --nologo --verbosity quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Plugin publish succeeded" -ForegroundColor Green
 } else {

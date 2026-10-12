@@ -31,7 +31,7 @@ Push-Location $LabRoot
 try {
     . "$PSScriptRoot/scaffold/07-plugins.ps1"
     . "$PSScriptRoot/scaffold/08-logic-solution.ps1"
-    dotnet build --nologo --verbosity quiet
+    Invoke-LabNative dotnet build --nologo --verbosity quiet
     if ($LASTEXITCODE -ne 0) { Write-Err "dotnet build failed"; exit 1 }
 } finally { Pop-Location }
 
@@ -41,7 +41,8 @@ Introduce server-side inventory logic so warehouse transactions are validated an
 ## Changes
 - add src/Plugins.Warehouse with validation and quantity update plugins
 - add src/Solutions.Logic with the plugin assembly registration
-- register pre-validation and post-operation steps for transaction creation
+- register stock accounting for Create/Update/Delete, with pre-images for corrections
+- reject nonpositive quantities, negative balances, concurrency conflicts and direct stock edits
 ## Testing
 - dotnet build --nologo --verbosity quiet passes with the new plugin and logic projects
 '@

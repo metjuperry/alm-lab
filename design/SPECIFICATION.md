@@ -7,7 +7,7 @@ before any of it was built.
 
 ## The situation
 
-A distribution company stores goods across more than one physical site — a main warehouse and an
+A grocery distribution company stores goods across more than one physical site — a main warehouse and an
 overflow unit — and runs the whole operation on a shared spreadsheet.
 
 Nobody trusts the numbers in it. Stock is counted when someone remembers to count it, and the
@@ -81,7 +81,11 @@ The job is narrow and repetitive: find an item, record that stock went out or ca
    what was available and what was asked for, because the person recording it needs to know how
    short they are, not just that they were wrong.
 2. **On-hand quantity follows from movements automatically.** Goods in add, goods out subtract.
-   This holds no matter which surface recorded the movement.
+   Creating, editing or deleting a movement applies its signed effect: an edit reverses
+   the old effect before applying the new one, and deletion reverses the old effect.
+   Quantities must be positive; no operation may leave stock negative. Item changes
+   affect both items atomically. Concurrent conflicts reject the whole operation
+   with an instruction to refresh and retry. New items start at zero.
 3. **An item at or below its reorder point is visibly low on stock** wherever items are listed —
    not buried in a report someone has to go and run.
 
@@ -139,6 +143,11 @@ Publisher prefix `almlab`. Three tables.
 Relationships, both 1:N: location → item via `almlab_locationid`, item → movement via
 `almlab_itemid`.
 
+CP11 adds `almlab_product`: name, EAN, brand, package quantity, image URL, image
+file and last-synced timestamp. Item → Product uses `almlab_productid`. The grocery
+fixtures are Long Grain Rice 1kg, Nutella Hazelnut Spread 400g and Olive Oil 1L;
+opening inbound movements match their seeded balances.
+
 ---
 
 ## Where each behaviour runs
@@ -148,7 +157,8 @@ Relationships, both 1:N: location → item via `almlab_locationid`, item → mov
 | Item name, SKU and quantity are mandatory; a movement needs item, type, quantity and date | **Configuration** | Required-level flags. Nothing here needs code. |
 | Category and movement type are fixed sets | **Configuration** | Local choices on the columns. |
 | **An outbound movement may not exceed what is on hand** | **Backend** — plug-in, **pre-validation** (stage 10, sync) | The rule has to hold for the model-driven app, the code app, the Web API and any import alike. Pre-validation because the right outcome is *rejection before anything is written* — and the message carries both numbers: `Not enough product in stock. Available: {n}, requested: {m}.` |
-| **On-hand follows the movement** — inbound adds, outbound subtracts | **Backend** — plug-in, **post-operation** (stage 40, sync) | Two writes that must not diverge. Post-operation so the movement exists before the item is adjusted; synchronous so the number is right the instant the worker looks at it. |
+| **On-hand follows the movement**, including corrections and deletion | **Backend** — plug-in, **post-operation** (stage 40, sync) on Create/Update/Delete | Pre-images provide old values. Row-version-checked item updates and movement changes commit or roll back together. Pre-validation alone is not a concurrency guard. |
+| Direct stock editing is rejected | **Backend** — pre-validation on Item Create/Update | Ordinary users change stock through movements; the internal accounting update is distinguished through its parent plugin context. |
 | Low stock is visible wherever items are listed | **Frontend** — grid customiser | Presentation, not a rule. Cells at or below the reorder point are painted; items with no reorder point fall back to 10. Never the enforcement of anything. |
 | Movement date defaults to today | **Frontend** — form `onLoad` | Saves a keystroke where a person is typing. The column stays required, so the default is a convenience, not the guarantee. |
 | Check an item's level against its reorder point on demand | **Frontend** — ribbon button on the item form | Answers a question; changes nothing. J4. |
@@ -160,8 +170,8 @@ Relationships, both 1:N: location → item via `almlab_locationid`, item → mov
 
 | Surface | Persona | What it is for |
 |---|---|---|
-| Model-driven app `almlab_warehouseapp` | Manager | The catalogue, the sites, the movements, and a dashboard |
-| Dashboard (generative page, first in the sitemap) | Manager | Three totals — items, sites, items low on stock — above the stock itself with low rows marked |
+| Model-driven app `almlab_warehouseapp` | Manager | The catalogue, sites, movements and Products |
+| Dashboard (optional generative page) | Manager | An extension enabled only after its separate deployment is verified |
 | Warehouse Picking code app | Worker | A fast, task-focused surface: list items, open one, record a movement, be told immediately if there is not enough |
 
 ---
@@ -182,10 +192,12 @@ listing that item paints its quantity when it is at or below the point. The dash
 **J4 · Check one item's stock position** *(manager)* — Item form → **Check Stock Levels** on the
 command bar → a dialog states the level and whether it is above or below the reorder point.
 
-**J5 · See the whole operation** *(manager)* — Dashboard, first in the sitemap, its own group.
+**J5 · See the whole operation** *(manager, optional extension)* — Dashboard, after a
+verified separate upload; not a dependency of the core lab.
 
-**J6 · Correct a movement** *(manager)* — Warehouse Transactions → open → amend → save. **The
-correction does not re-run either rule** — see Open questions.
+**J6 · Correct a movement** *(manager)* — Warehouse Transactions → open → amend or
+delete → save. Reverse the old effect and apply the new one, or reject the complete
+operation. Workers may edit their own movements but cannot delete.
 
 **J7 · Find an item** *(worker, code app)* — Open the app → item list → tap through to the item.
 
@@ -193,8 +205,8 @@ correction does not re-run either rule** — see Open questions.
 Outbound, quantity, date → submit. Enough stock: the movement is created and on-hand drops. Not
 enough: the write is refused and the message names the available and requested quantities.
 
-**J9 · Record stock coming in** *(worker, code app)* — The same dialog with type Inbound. No
-validation applies; on-hand rises.
+**J9 · Record stock coming in** *(worker, code app)* — The same dialog with type
+Inbound. Quantity must be positive; on-hand rises after a confirmed save.
 
 **J10 · See what is on hand** *(worker, code app)* — Item detail shows the current quantity, read
 after each movement rather than cached.
@@ -204,7 +216,8 @@ after each movement rather than cached.
 ## Out of scope
 
 Purchase orders, suppliers and replenishment workflow. Picking routes and bin-level positions
-within a site. Barcode scanning hardware — the barcode is stored, not read. Costing beyond a unit
+within a site. Dedicated scanner hardware integrations (camera and typed EAN lookup
+are included). Costing beyond a unit
 price and a movement's total value. Shipping and customers. Stock-takes and adjustments that are
 not a movement.
 
@@ -215,12 +228,10 @@ not a movement.
 These are stated rather than left out, because a specification is exactly where a rule nobody
 implemented should become visible.
 
-1. **Both plug-in steps are registered on Create only.** `Create of almlab_warehousetransaction`,
-   stages 10 and 40. Editing a saved movement therefore neither re-validates it nor adjusts
-   on-hand. Combined with the worker's Basic write on movements, a worker can record an outbound
-   of 1 against an item holding 1, then edit it to 1000: no rejection, and the item's quantity
-   never moves. Either movements become immutable once saved, or both steps gain an Update
-   registration with a pre-image to work out the delta. **This is the most significant gap.**
+1. **Live proof is still required for transactional accounting.** The implementation
+   now covers Create/Update/Delete and row-version conflicts. Unit tests verify
+   deltas and request contracts; a dedicated Dataverse run must verify actual
+   rollback, concurrency and both personas' permissions.
 2. **`almlab_isprocessed` and `almlab_processedby` serve no job.** Nothing reads or writes them.
    They are either the residue of a workflow that was never built, or a requirement nobody wrote
    down. Columns with no job are how a data model rots.

@@ -34,6 +34,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { Package, Plus, RefreshCw } from "lucide-react";
 
 export default function WarehouseItemsPage() {
@@ -41,7 +42,7 @@ export default function WarehouseItemsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState("0");
   const [category, setCategory] = useState("");
   const [locationId, setLocationId] = useState("");
 
@@ -61,18 +62,18 @@ export default function WarehouseItemsPage() {
         ],
         orderBy: ["__PREFIX___name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: lookupError } = useQuery({
     queryKey: ["warehouseLocations"],
     queryFn: async () => {
       const result = await __PASCAL___warehouselocationsService.getAll({
         select: ["__PREFIX___warehouselocationid", "__PREFIX___name"],
         orderBy: ["__PREFIX___name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
@@ -85,7 +86,7 @@ export default function WarehouseItemsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return __PASCAL___warehouseitemsService.create({
+      const result = await __PASCAL___warehouseitemsService.create({
         __PREFIX___name: name,
         __PREFIX___sku: sku,
         __PREFIX___availablequantity: quantity,
@@ -94,6 +95,7 @@ export default function WarehouseItemsPage() {
           ? { "__PREFIX___locationid@odata.bind": `/__PREFIX___warehouselocations(${locationId})` }
           : {}),
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["warehouseItems"] });
@@ -109,7 +111,7 @@ export default function WarehouseItemsPage() {
     setDialogOpen(false);
     setName("");
     setSku("");
-    setQuantity("");
+    setQuantity("0");
     setCategory("");
     setLocationId("");
   };
@@ -125,6 +127,7 @@ export default function WarehouseItemsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {lookupError && <p role="alert">{String(lookupError)}</p>}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Package className="h-8 w-8 text-primary" />
@@ -266,12 +269,14 @@ export default function WarehouseItemsPage() {
               <Label htmlFor="quantity">Available Quantity *</Label>
               <Input
                 id="quantity"
+                disabled
                 type="number"
                 min="0"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="0"
               />
+              <p className="text-sm text-muted-foreground">Record an inbound movement after creating the item.</p>
             </div>
             <div className="space-y-2">
               <Label>Category *</Label>

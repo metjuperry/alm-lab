@@ -18,7 +18,7 @@ Write-Host "`n── Connectors.OpenFoodFacts ──" -ForegroundColor Cyan
 
 if (-not (Get-LabValue 'connectorScaffolded')) {
 
-    txc workspace component create pp-connector `
+    Invoke-LabNative txc workspace component create pp-connector `
         --output "src/Connectors.OpenFoodFacts" `
         --param "Host=world.openfoodfacts.org" `
         --param "DisplayName=Open Food Facts" `
@@ -47,7 +47,7 @@ if (-not (Get-LabValue 'connectorScaffolded')) {
 
     Write-Host "`n── Solutions.Connectors ──" -ForegroundColor Cyan
 
-    txc workspace component create pp-solution `
+    Invoke-LabNative txc workspace component create pp-solution `
         --output "src/Solutions.Connectors" `
         --param "PublisherName=$PublisherName" `
         --param "PublisherPrefix=$PublisherPrefix" `
@@ -60,14 +60,14 @@ if (-not (Get-LabValue 'connectorScaffolded')) {
     Write-Host "  ✓ Solutions.Connectors" -ForegroundColor Green
 
     cd src/Solutions.Connectors
-    dotnet add reference ../Connectors.OpenFoodFacts/Connectors.OpenFoodFacts.csproj
+    Invoke-LabNative dotnet add reference ../Connectors.OpenFoodFacts/Connectors.OpenFoodFacts.csproj
     cd ../..
 
     Write-Host "  ✓ ProjectReference: Connectors.OpenFoodFacts → Solutions.Connectors" -ForegroundColor Green
 
     Write-Host "  → Building Solutions.Connectors..." -ForegroundColor White
     cd src/Solutions.Connectors
-    dotnet build --nologo --verbosity quiet
+    Invoke-LabNative dotnet build --nologo --verbosity quiet
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  ✓ Solutions.Connectors build succeeded" -ForegroundColor Green
     } else {
@@ -79,3 +79,14 @@ if (-not (Get-LabValue 'connectorScaffolded')) {
 } else {
     Write-Host "  ✓ Connectors.OpenFoodFacts / Solutions.Connectors (exist)" -ForegroundColor Green
 }
+
+# Include the connector in the promoted artifact as well as deploying it separately to Dev.
+Invoke-LabNative dotnet add src/Packages.Main/Packages.Main.csproj reference src/Solutions.Connectors/Solutions.Connectors.csproj
+$packageProjectPath = (Resolve-Path 'src/Packages.Main/Packages.Main.csproj').Path
+[xml]$packageProjectXml = Get-Content $packageProjectPath -Raw
+$connectorReference = $packageProjectXml.SelectSingleNode("//ProjectReference[contains(@Include,'Solutions.Connectors')]")
+$uiReference = $packageProjectXml.SelectSingleNode("//ProjectReference[contains(@Include,'Solutions.UI')]")
+if (-not $connectorReference -or -not $uiReference) { throw 'The package must reference both Connectors and UI.' }
+[void]$connectorReference.ParentNode.RemoveChild($connectorReference)
+[void]$uiReference.ParentNode.InsertBefore($connectorReference, $uiReference)
+$packageProjectXml.Save($packageProjectPath)

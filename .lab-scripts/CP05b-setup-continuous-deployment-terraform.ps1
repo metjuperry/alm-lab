@@ -32,6 +32,7 @@ $tfIdentityDir = Join-Path $LabRoot "infra/identity/terraform"
 
 if (-not $repo -and -not $env:LAB_LOCAL_MODE) { $originUrl = git -C $LabRoot remote get-url origin 2>$null; if ($originUrl -match 'github\.com[:/](.+?)(?:\.git)?$') { $repo = $Matches[1] }; Set-LabValue 'repo' $repo }
 if (-not $testUrl) { Write-Err "Run CP04b first (Test environment URL missing). If you ran CP04 (imperative) instead, use CP05-setup-continuous-deployment.ps1, not this script."; exit 1 }
+Assert-LabProfile test
 
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would verify Azure sign-in, apply"
@@ -51,8 +52,8 @@ if ($env:LAB_LOCAL_MODE) {
 # actually there.
 terraform "-chdir=$tfEnvDir" init -input=false 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in infra/environments/terraform"; exit 1 }
-terraform "-chdir=$tfEnvDir" state list module.test.powerplatform_environment.this 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$ownedResources = terraform "-chdir=$tfEnvDir" state list module.test.powerplatform_environment.this
+if ($LASTEXITCODE -ne 0 -or 'module.test.powerplatform_environment.this' -notin $ownedResources) {
     Write-Err "module.test.powerplatform_environment.this not found in infra/environments/terraform's local state."
     Write-Err "Run CP04b-setup-runtime-terraform.ps1 first. If you already ran it on a different machine or"
     Write-Err "session, its local Terraform state file didn't travel with the repo (gitignored by design) — see"
@@ -72,6 +73,8 @@ if (-not $tenantId) {
     Set-LabValue 'tenantId' $tenantId
 }
 Write-Ok "Azure: tenant $tenantId"
+$liveTenant = Invoke-LabNative az account show --query tenantId -o tsv
+if ($liveTenant -ne $tenantId) { throw 'Azure is signed into a different tenant from CP01. Reconcile authentication before applying Terraform.' }
 
 # Step 2+3: App registration, service principal, and federated credential — all three are
 # one Terraform resource graph in infra/identity/terraform, applied in a single call.
@@ -91,9 +94,11 @@ Write-Ok "Azure: tenant $tenantId"
 terraform "-chdir=$tfIdentityDir" init -input=false 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Err "terraform init failed in infra/identity/terraform"; exit 1 }
 $appName = "wm-deploy-$rid"
+$subject = Get-LabOidcSubject -Repository $repo
 terraform "-chdir=$tfIdentityDir" apply -auto-approve -input=false `
     -var "app_display_name=$appName" `
-    -var "github_repo=$repo"
+    -var "github_repo=$repo" `
+    -var "github_oidc_subject=$subject"
 if ($LASTEXITCODE -ne 0) { Write-Err "terraform apply failed in infra/identity/terraform"; exit 1 }
 
 $identityOutputJson = terraform "-chdir=$tfIdentityDir" output -json
@@ -129,9 +134,9 @@ Write-Ok "Service principal added to Test environment as application user (Syste
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would run 'gh secret set AZURE_CLIENT_ID/AZURE_TENANT_ID/DATAVERSE_TEST_URL'"
 } else {
-    gh secret set AZURE_CLIENT_ID    --repo $repo --body $appId
-    gh secret set AZURE_TENANT_ID    --repo $repo --body $tenantId
-    gh secret set DATAVERSE_TEST_URL --repo $repo --body $testUrl
+    Invoke-LabNative gh secret set AZURE_CLIENT_ID    --repo $repo --body $appId
+    Invoke-LabNative gh secret set AZURE_TENANT_ID    --repo $repo --body $tenantId
+    Invoke-LabNative gh secret set DATAVERSE_TEST_URL --repo $repo --body $testUrl
     Write-Ok "Secrets set: AZURE_CLIENT_ID, AZURE_TENANT_ID, DATAVERSE_TEST_URL"
 }
 
@@ -139,7 +144,7 @@ if ($env:LAB_LOCAL_MODE) {
 if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped — would run 'gh api -X PUT repos/<repo>/actions/permissions'"
 } else {
-    gh api -X PUT "repos/$repo/actions/permissions" -F enabled=true -f allowed_actions=all 2>&1 | Out-Null
+    Invoke-LabNative gh api -X PUT "repos/$repo/actions/permissions" -F enabled=true -f allowed_actions=all 2>&1 | Out-Null
     Write-Ok "GitHub Actions enabled on the fork"
 }
 

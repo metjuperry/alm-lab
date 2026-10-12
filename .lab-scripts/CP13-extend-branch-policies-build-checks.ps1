@@ -39,7 +39,7 @@ $rules = @(
         required_status_checks=@(@{ context="build" }) } }
 ) | ConvertTo-Json -Depth 10
 $tmp = New-TemporaryFile; "{`"rules`":$rules}" | Set-Content $tmp -Encoding UTF8
-gh api -X PUT "repos/$repo/rulesets/$id" --input $tmp 2>&1 | Out-Null
+Invoke-LabNative gh api -X PUT "repos/$repo/rulesets/$id" --input $tmp 2>&1 | Out-Null
 Remove-Item $tmp
 Set-LabValue 'mainRulesetId' $id
 Write-Ok "Ruleset now requires 'build' to pass"

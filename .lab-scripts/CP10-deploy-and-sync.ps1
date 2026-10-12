@@ -31,6 +31,7 @@ Write-Step "CP10 — Deploy to Dev & sync changes back"
 $devUrl = Get-LabValue 'devEnvUrl'
 $devProfile = Get-LabValue 'devProfile'
 if (-not $devUrl -or -not $devProfile) { Write-Err "Dev environment not found in lab state. Run CP04 first."; exit 1 }
+Assert-LabProfile dev
 
 # ──────────────────────────────────────────────────────────────────────────────────────────
 # Step 0: Import the TALXIS Grid control package FIRST. The Warehouse Location form
@@ -46,7 +47,7 @@ if ($env:LAB_LOCAL_MODE) {
     Write-Info "  import the TALXIS Grid control package into Dev ($devUrl)."
 } else {
     Write-Info "Importing TALXIS Grid control package ($gridPackage)..."
-    txc env pkg import $gridPackage
+    txc env pkg import $gridPackage --profile $devProfile
     if ($LASTEXITCODE -ne 0) { Write-Err "Grid control package import failed"; exit 1 }
 }
 
@@ -65,12 +66,12 @@ $pkgProj = Join-Path $LabRoot "src/Packages.Main/Packages.Main.csproj"
 # defaults PublishOnBuild=true), redirecting its output away from its own bin/<Config>/
 # <TFM>/publish/ folder and breaking EnsurePluginAssemblyDataXml downstream.
 # See: https://github.com/TALXIS/tools-devkit-build/issues/109
-dotnet publish $pkgProj -c Release --nologo --verbosity quiet
+Invoke-LabNative dotnet publish $pkgProj -c Debug --nologo --verbosity quiet
 if ($LASTEXITCODE -ne 0) { Write-Err "dotnet publish failed"; exit 1 }
 
 # Locate the pdpkg.zip (Package Deployer package archive) at its natural output location —
 # no need to stage/copy it anywhere, bin/ is gitignored either way.
-$pdpkg = Get-ChildItem (Join-Path $LabRoot "src/Packages.Main/bin/Release") -Filter "*.pdpkg.zip" -Recurse | Select-Object -First 1
+$pdpkg = Get-ChildItem (Join-Path $LabRoot "src/Packages.Main/bin/Debug") -Filter "*.pdpkg.zip" -Recurse | Select-Object -First 1
 if (-not $pdpkg) { Write-Err "Packages.Main.pdpkg.zip not found after publish"; exit 1 }
 Write-Ok "Package built: $($pdpkg.Name)"
 
@@ -111,7 +112,7 @@ if (-not $autoMode) {
     Write-Host "║  Your app is now live in the Dev environment!                        ║" -ForegroundColor Yellow
     Write-Host "║                                                                      ║" -ForegroundColor Yellow
     Write-Host "║  Open $devUrl" -ForegroundColor Yellow
-    Write-Host "║  Try: Settings → Security Roles → modify the Warehouse Operator role ║" -ForegroundColor Yellow
+    Write-Host "║  Try: Settings → Security Roles → modify the Warehouse worker role   ║" -ForegroundColor Yellow
     Write-Host "║                                                                      ║" -ForegroundColor Yellow
     Write-Host "║  Press ENTER when you're done making changes...                      ║" -ForegroundColor Yellow
     Write-Host "╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
@@ -124,12 +125,8 @@ if (-not $autoMode) {
 # txc env solution pull downloads the unmanaged solution(s) from Dev into the source tree.
 # This is how manual customizations in the maker portal get committed as source.
 #
-# Caveat: this only works while Dev still holds an UNMANAGED layer of the solution. The
-# package built above installs managed solutions, so an environment that has only ever
-# received that package answers this pull with 'Managed solutions cannot be exported'
-# (0x80048036). Dev is meant to be the one environment where the unmanaged layer lives -
-# if you hit that error, the app was installed here as managed and there is nothing
-# unmanaged to bring back.
+# Debug packages install unmanaged solutions in Dev. A pre-existing managed installation
+# needs a fresh Dev sandbox or an explicitly approved migration; never uninstall it here.
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
 Write-Info "Pulling solution changes from Dev back to source..."
@@ -138,7 +135,7 @@ foreach ($sol in $solutions) {
     $solPath = Join-Path $LabRoot "src/$sol"
     if (Test-Path $solPath) {
         txc env solution pull $solPath --profile $devProfile
-        if ($LASTEXITCODE -ne 0) { Write-Warn2 "Pull for $sol returned non-zero (may be OK if no changes)" }
+        if ($LASTEXITCODE -ne 0) { throw "Pull for $sol failed. Confirm Dev contains an unmanaged solution; no checkpoint was completed." }
     }
 }
 Write-Ok "Solution pull complete"

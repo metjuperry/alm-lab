@@ -25,18 +25,20 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot/lib/Lab.Common.ps1"
 
 Write-Step "CP01 — Machine setup + sign-in"
+$toolchain = Get-Content "$PSScriptRoot/toolchain.json" -Raw | ConvertFrom-Json
 
 # ── 1. Tool check ────────────────────────────────────────────────────────────────────────
 # MinVersion is optional — set it when a tool's version, not just its presence, matters for
 # the lab's npm-based builds (Scripts.UI, code apps, PCF).
 $tools = [ordered]@{
-    "dotnet" = @{ Cmd = "dotnet --version" }     # .NET SDK — builds solutions, plugins, packages
+    "dotnet" = @{ Cmd = "dotnet --version"; MinVersion = $toolchain.dotnetMinimum }
     "git"    = @{ Cmd = "git --version" }        # version control
     "gh"     = @{ Cmd = "gh --version" }         # GitHub CLI — repo, PRs, secrets, workflows
     "pac"    = @{ Cmd = "pac help" }             # Power Platform CLI
+    "pa"     = @{ Cmd = "pa --version"; MinVersion = $toolchain.paMinimum }
     "txc"    = @{ Cmd = "txc --version" }        # TALXIS CLI — scaffolding, env, deploy
     "az"     = @{ Cmd = "az version" }           # Azure CLI — app registration + OIDC
-    "node"   = @{ Cmd = "node --version"; MinVersion = "22.12" }  # Node.js — npm-based builds
+    "node"   = @{ Cmd = "node --version"; MinVersion = $toolchain.nodeMinimum }
 }
 
 $missing = @()
@@ -78,18 +80,27 @@ function Invoke-WithRetry([string]$Description, [scriptblock]$Command) {
     throw "$Description failed after 2 attempts (exit $LASTEXITCODE)"
 }
 
-# Ensure TALXIS CLI is latest (picks up any last-minute fixes).
-Write-Info "Updating TALXIS CLI to latest..."
-Invoke-WithRetry "TALXIS CLI update" { dotnet tool update --global TALXIS.CLI }
-Write-Ok "TALXIS CLI: $((txc --version) -replace '\+.*','')"
+# Upgrades are deliberate: changing the CLI/templates during a run changes generated code.
+Write-Info "TALXIS CLI: $((txc --version) -replace '\+.*','')"
+$txcVersion = (Invoke-LabNative txc --version).Trim().Split('+')[0]
+if ($txcVersion -ne $toolchain.txc) {
+    throw "Use the tested CLI: dotnet tool update --global TALXIS.CLI --version $($toolchain.txc)"
+}
 
 # The agentbox image bakes in a pinned txc + template pack version for fast startup, but
 # `txc workspace component create` (used by every scaffold script) reads its scaffolding
 # from the TALXIS.DevKit.Templates.Dataverse template pack, not from the CLI binary above.
 # Keep the two in lockstep so newly-scaffolded components match the CLI we just updated to.
-Write-Info "Updating TALXIS DevKit templates to latest..."
-Invoke-WithRetry "TALXIS DevKit templates update" { dotnet new install TALXIS.DevKit.Templates.Dataverse }
-Write-Ok "TALXIS DevKit templates updated"
+Invoke-LabNative dotnet @('new', 'list', 'pp-solution') | Out-Null
+$previousLanguage = $env:DOTNET_CLI_UI_LANGUAGE
+try {
+    $env:DOTNET_CLI_UI_LANGUAGE = 'en'
+    $installed = (Invoke-LabNative dotnet new uninstall) -join "`n"
+} finally { $env:DOTNET_CLI_UI_LANGUAGE = $previousLanguage }
+if ($installed -notmatch 'TALXIS\.DevKit\.Templates\.Dataverse\s+Version:\s+(\S+)' -or $Matches[1] -ne $toolchain.templates) {
+    throw "Install the tested templates: dotnet new install TALXIS.DevKit.Templates.Dataverse::$($toolchain.templates) --force"
+}
+Write-Ok "TALXIS template availability checked (no implicit upgrade)"
 
 if ($env:LAB_LOCAL_MODE) {
     Write-Step "Sign in 1/3 — GitHub"
@@ -100,7 +111,7 @@ if ($env:LAB_LOCAL_MODE) {
     Write-Info "LAB_LOCAL_MODE: skipped sign-in for Azure"
 } else {
 
-# ── 2. GitHub CLI sign-in (workflow + delete_repo scopes needed for the lab) ────────────
+# ── 2. GitHub CLI sign-in (workflow scope is needed for the lab) ─────────────────────────
 Write-Step "Sign in 1/3 — GitHub"
 # Codespaces commonly injects GITHUB_TOKEN, which blocks interactive `gh auth login`.
 if ($env:GITHUB_TOKEN) {
@@ -111,7 +122,7 @@ $ghScopes = (gh auth status 2>&1 | Select-String 'Token scopes') -replace '.*Tok
 $needsRefresh = (-not $ghScopes) -or ($ghScopes -notmatch 'workflow')
 if ($needsRefresh) {
     Write-Info "Logging in to GitHub (browser or device code)..."
-    gh auth login -h github.com -p https -s workflow,delete_repo --web
+    gh auth login -h github.com -p https -s workflow --web
     if ($LASTEXITCODE -ne 0) { Write-Err "GitHub login failed"; exit 1 }
 }
 gh auth setup-git 2>&1 | Out-Null
@@ -148,7 +159,7 @@ Verify the local toolchain and sign in to the services required to build and dep
 
 ## Changes
 - verify dotnet, git, gh, pac, txc, az, and node are available
-- update the TALXIS CLI (txc) and TALXIS DevKit template pack to latest
+- report the selected TALXIS CLI and check template availability without silently upgrading
 - authenticate GitHub CLI, TALXIS CLI, and Azure CLI
 - persist the random identifier, tenant id, and auth profile references
 ## Testing

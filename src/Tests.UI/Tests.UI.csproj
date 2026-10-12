@@ -39,6 +39,7 @@
   -->
   <ItemGroup>
     <ReqnrollFeatureFile Remove="Features/Discovered/**/*.feature" />
+    <ReqnrollFeatureFile Remove="Features/Planned/**/*.feature" />
     <None Include="Features/Discovered/**/*.feature" />
   </ItemGroup>
 

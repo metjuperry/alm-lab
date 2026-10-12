@@ -13,7 +13,7 @@ Write-Host "`n── Columns ──" -ForegroundColor Cyan
 
 # --- warehouseitem columns ---
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=WholeNumber" `
@@ -24,7 +24,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.availablequantity (WholeNumber)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Text" `
@@ -35,7 +35,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.sku (Text)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Lookup" `
@@ -47,7 +47,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.locationid (Lookup → warehouselocation)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=MultilineText" `
@@ -58,7 +58,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.description (MultilineText)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Money" `
@@ -70,7 +70,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.unitprice (Money)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Decimal" `
@@ -82,7 +82,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.weight (Decimal)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=OptionSet(Local)" `
@@ -94,7 +94,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.category (OptionSet Local)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Boolean" `
@@ -107,7 +107,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.isperishable (Boolean)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=DateTime" `
@@ -119,7 +119,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.expirationdate (DateTime, date only)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=Text" `
@@ -130,7 +130,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouseitem.barcode (Text)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouseitem" `
     --param "AttributeType=WholeNumber" `
@@ -143,7 +143,7 @@ Write-Host "  ✓ warehouseitem.reorderpoint (WholeNumber)" -ForegroundColor Gre
 
 # --- warehouselocation columns ---
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
     --param "AttributeType=WholeNumber" `
@@ -154,7 +154,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouselocation.capacity (WholeNumber)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
     --param "AttributeType=Text" `
@@ -165,7 +165,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouselocation.address (Text)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
     --param "AttributeType=Boolean" `
@@ -178,7 +178,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehouselocation.isactive (Boolean)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehouselocation" `
     --param "AttributeType=MultilineText" `
@@ -191,7 +191,7 @@ Write-Host "  ✓ warehouselocation.notes (MultilineText)" -ForegroundColor Gree
 
 # --- warehousetransaction columns ---
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=Lookup" `
@@ -203,7 +203,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.itemid (Lookup → warehouseitem)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=WholeNumber" `
@@ -214,7 +214,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.quantity (WholeNumber)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=OptionSet(Local)" `
@@ -226,7 +226,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.transactiontype (OptionSet Local)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=DateTime" `
@@ -237,7 +237,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.transactiondate (DateTime)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=MultilineText" `
@@ -248,7 +248,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.notes (MultilineText)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=Money" `
@@ -260,7 +260,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.totalvalue (Money)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=Boolean" `
@@ -273,7 +273,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.isprocessed (Boolean)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=Text" `
@@ -284,7 +284,7 @@ txc workspace component create pp-entity-attribute `
 
 Write-Host "  ✓ warehousetransaction.processedby (Text)" -ForegroundColor Green
 
-txc workspace component create pp-entity-attribute `
+Invoke-LabNative txc workspace component create pp-entity-attribute `
     --output "src/Solutions.DataModel" `
     --param "EntitySchemaName=${PublisherPrefix}_warehousetransaction" `
     --param "AttributeType=Text" `

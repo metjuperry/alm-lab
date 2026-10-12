@@ -21,18 +21,18 @@ if (-not (Get-LabValue 'pluginsTestsScaffolded')) {
 # fails (rolling everything back) when it doesn't - pre-create it as a workaround.
 New-Item -ItemType Directory -Path "src/Tests.Plugins/.template.temp" -Force | Out-Null
 
-txc workspace component create pp-plugin-test `
+Invoke-LabNative txc workspace component create pp-plugin-test `
     --output "src/Tests.Plugins"
 
-dotnet sln add src/Tests.Plugins
+Invoke-LabNative dotnet sln add src/Tests.Plugins
 
 cd src/Tests.Plugins
-# Tests.Plugins targets net10.0 (FakeXrmEasy v3) but Plugins.Warehouse targets net462 -
+# Tests.Plugins targets net10.0 (FakeXrmEasy v3) but Plugins.Warehouse targets net472 -
 # the Dataverse plugin sandbox is still .NET Framework, so that side can't move (see the
 # constraint note near the top of CP15-implement-unit-tests.ps1). `dotnet add reference`
-# refuses to link projects across that gap: it runs its own net10.0-vs-net462 compatibility
+# refuses to link projects across that gap: it runs its own net10.0-vs-net472 compatibility
 # preflight and there is no bypass flag, not even `-f`/`--framework` (checked). The actual
-# build doesn't share that limitation - NuGet's asset target fallback resolves the net462
+# build doesn't share that limitation - NuGet's asset target fallback resolves the net472
 # reference fine, which is why `dotnet build`/`dotnet test` further down print a NU1702
 # warning ("resolved using .NETFramework,Version=v4.7.2 instead of..."). That warning is
 # expected and benign here - don't "fix" it by trying to retarget either project. So skip
@@ -83,12 +83,12 @@ if (-not (Get-LabValue 'scriptsTestsScaffolded')) {
 
 # ScriptLibraryPath points at the rollup bundle Scripts.UI builds - the same file that
 # ships as the web resource is the file under test.
-txc workspace component create pp-test-script `
+Invoke-LabNative txc workspace component create pp-test-script `
     --output "src/Tests.Scripts" `
     --param "ScriptTestProjectName=Tests.Scripts" `
     --param "ScriptLibraryPath=../Scripts.UI/build/${prefix}_main.js"
 
-dotnet sln add src/Tests.Scripts
+Invoke-LabNative dotnet sln add src/Tests.Scripts
 
 Write-Host "  ✓ Tests.Scripts project (Jest)" -ForegroundColor Green
 

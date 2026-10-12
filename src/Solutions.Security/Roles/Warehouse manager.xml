@@ -3,6 +3,12 @@
   <IsCustomizable>1</IsCustomizable>
   <IsAutoAssigned>0</IsAutoAssigned>
   <RolePrivileges>
+    <RolePrivilege name="prvAppendalmlab_product" level="Global" />
+    <RolePrivilege name="prvDeletealmlab_product" level="Global" />
+    <RolePrivilege name="prvAppendToalmlab_product" level="Global" />
+    <RolePrivilege name="prvCreatealmlab_product" level="Global" />
+    <RolePrivilege name="prvReadalmlab_product" level="Global" />
+    <RolePrivilege name="prvWritealmlab_product" level="Global" />
     <RolePrivilege name="prvAppendalmlab_warehouseitem" level="Global" />
     <RolePrivilege name="prvAppendalmlab_warehouselocation" level="Global" />
     <RolePrivilege name="prvAppendalmlab_warehousetransaction" level="Global" />

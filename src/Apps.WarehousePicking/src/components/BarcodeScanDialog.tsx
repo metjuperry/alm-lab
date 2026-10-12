@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { ScanLine, Loader2 } from "lucide-react";
 
 // A binary connector response comes back as a base64 string in the JSON envelope, not raw
@@ -119,7 +120,10 @@ export default function BarcodeScanDialog({ itemId, currentProductId, onLinked }
   }, [open, videoEl]);
 
   const handleEan = async (barcode: string) => {
-    if (!barcode) return;
+    if (!/^(?:\d{8}|\d{12,14})$/.test(barcode)) {
+      toast.error("Enter an 8, 12, 13 or 14 digit barcode.");
+      return;
+    }
     setLooking(true);
     setProduct(null);
     setImgError(false);
@@ -183,28 +187,36 @@ export default function BarcodeScanDialog({ itemId, currentProductId, onLinked }
         filter: `almlab_ean eq '${ean}'`,
         top: 1,
       });
-      let productId = existing.data?.[0]?.almlab_productid;
+      let productId = requireSuccess(existing)?.[0]?.almlab_productid;
 
       if (!productId) {
         // createRecordAsync's response shape for the new record's id isn't reliable across
         // hosts (confirmed empirically: the live Power Apps player's create response didn't
         // carry almlab_productid in .data) - re-query by the same EAN filter used above
         // instead of trusting the create call's own return value.
-        await Almlab_productsService.create({
+        requireSuccess(await Almlab_productsService.create({
           almlab_name: product.name || ean,
           almlab_ean: ean,
           almlab_brand: product.brand,
           almlab_quantity: product.quantity,
           almlab_imageurl: product.imageUrl,
           almlab_lastsyncedon: new Date().toISOString(),
-        } as any);
+        } as any));
 
         const created = await Almlab_productsService.getAll({
           select: ["almlab_productid"],
           filter: `almlab_ean eq '${ean}'`,
           top: 1,
         });
-        productId = created.data?.[0]?.almlab_productid;
+        productId = requireSuccess(created)?.[0]?.almlab_productid;
+      } else {
+        requireSuccess(await Almlab_productsService.update(productId, {
+          almlab_name: product.name || ean,
+          almlab_brand: product.brand,
+          almlab_quantity: product.quantity,
+          almlab_imageurl: product.imageUrl,
+          almlab_lastsyncedon: new Date().toISOString(),
+        }));
       }
 
       if (!productId) {
@@ -212,9 +224,9 @@ export default function BarcodeScanDialog({ itemId, currentProductId, onLinked }
         return;
       }
 
-      await Almlab_warehouseitemsService.update(itemId, {
+      requireSuccess(await Almlab_warehouseitemsService.update(itemId, {
         "almlab_productid@odata.bind": `/almlab_products(${productId})`,
-      } as any);
+      } as any));
 
       if (imageBytes) {
         try {

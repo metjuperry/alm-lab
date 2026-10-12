@@ -30,6 +30,34 @@ public static class SignIn
         "#passwordError:visible, #usernameError:visible, [role='alert']:visible, " +
         ".alert-error:visible, [aria-live='assertive']:visible";
 
+    public static async Task<IBrowserContext> CreateSignedInContextAsync(IBrowser browser, string persona)
+    {
+        var user = TestCredentials.For(persona);
+        var context = await browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            StorageStatePath = File.Exists(user.StorageStatePath) ? user.StorageStatePath : null
+        });
+        try
+        {
+            var page = await context.NewPageAsync();
+            var url = TestConfiguration.EnvironmentUrl.TrimEnd('/');
+            await page.GotoAsync(url);
+            if (await IsSignInPageAsync(page))
+            {
+                if (!user.HasPassword) throw new InvalidOperationException($"Configure credentials for '{persona}' to clean up the test-owned fixture.");
+                await SignInAsync(page, user, url);
+                await context.StorageStateAsync(new BrowserContextStorageStateOptions { Path = user.StorageStatePath });
+            }
+            await page.CloseAsync();
+            return context;
+        }
+        catch
+        {
+            await context.CloseAsync();
+            throw;
+        }
+    }
+
     public static async Task EnsureSignedInAsync(ScenarioContext scenarioContext, string persona)
     {
         var user = TestCredentials.For(persona);
@@ -37,9 +65,9 @@ public static class SignIn
         // An explicitly configured StorageStatePath is someone saying "use this session, I
         // captured it myself" - Hooks already applied it, so don't second-guess them.
         var explicitState = !string.IsNullOrWhiteSpace(TestConfiguration.StorageStatePath);
-        if (!explicitState && File.Exists(user.StorageStatePath))
+        if (!explicitState)
         {
-            await ReplaceContextAsync(scenarioContext, user.StorageStatePath);
+            await ReplaceContextAsync(scenarioContext, File.Exists(user.StorageStatePath) ? user.StorageStatePath : null);
         }
 
         var page = (IPage)scenarioContext[Hooks.PageKey];
@@ -318,7 +346,7 @@ public static class SignIn
     /// decision - which account, therefore which session file - inside the step that states it.
     /// Nothing has happened in the page yet, so there is nothing to lose.
     /// </summary>
-    private static async Task ReplaceContextAsync(ScenarioContext scenarioContext, string storageStatePath)
+    private static async Task ReplaceContextAsync(ScenarioContext scenarioContext, string? storageStatePath)
     {
         var current = (IBrowserContext)scenarioContext[Hooks.BrowserContextKey];
         var browser = current.Browser

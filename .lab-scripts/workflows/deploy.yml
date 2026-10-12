@@ -7,12 +7,32 @@ on:
 permissions:
   id-token: write
   contents: read
+  actions: read
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      - name: Check for deployable artifact
+        id: artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          count=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts" --jq '[.artifacts[] | select(.name == "drop" and .expired == false)] | length')
+          echo "present=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          if [ "$count" -eq 0 ]; then echo "Layout-only checkpoint: no deployable package yet."; fi
       - uses: actions/download-artifact@v4
+        if: steps.artifact.outputs.present == 'true'
         with:
           name: drop
           path: ./drop
@@ -20,9 +40,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install txc
-        run: dotnet tool install --global TALXIS.CLI
+        if: steps.artifact.outputs.present == 'true'
+        run: dotnet tool install --global TALXIS.CLI --version 1.21.1
 
       - name: Configure txc WIF auth
+        if: steps.artifact.outputs.present == 'true'
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -33,7 +55,22 @@ jobs:
           txc config profile create --name ci --auth ci --connection test
 
       - name: Import TALXIS Grid control package
+        if: steps.artifact.outputs.present == 'true'
         run: txc env pkg import TALXIS.Controls.Grid.Package --profile ci
 
       - name: Deploy package to Test environment
+        if: steps.artifact.outputs.present == 'true'
         run: txc env pkg import ./drop/Packages.Main.pdpkg.zip --profile ci
+      - name: Bind the Test connection reference
+        if: ${{ steps.artifact.outputs.present == 'true' && hashFiles('drop/connection-reference.json') != '' }}
+        shell: pwsh
+        env:
+          CONNECTION_ID: ${{ vars.OPENFOODFACTS_TEST_CONNECTION_ID }}
+          CONNECTOR_ID: ${{ vars.OPENFOODFACTS_TEST_CONNECTOR_ID }}
+        run: |
+          if (-not $env:CONNECTION_ID -or -not $env:CONNECTOR_ID) {
+            throw 'Run CP11 connection setup for Test before promoting the integrated app.'
+          }
+          $binding = Get-Content drop/connection-reference.json -Raw | ConvertFrom-Json
+          .lab-scripts/Set-LabConnectionReference.ps1 -Profile ci -LogicalName $binding.logicalName `
+            -ConnectionId $env:CONNECTION_ID -ConnectorId $env:CONNECTOR_ID

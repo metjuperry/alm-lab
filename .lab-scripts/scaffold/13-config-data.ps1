@@ -29,11 +29,13 @@ Write-Host "  ✓ data_schema.xml (4 entities, disableplugins)" -ForegroundColor
 # Seed records as code. Stable GUIDs mean re-importing is an update, not a duplicate -
 # the same package can run against any environment any number of times.
 # Full source: .lab-scripts/templates/13-config-data/data.xml
-Expand-LabTemplate -Path "13-config-data/data.xml" `
-    -Destination "$dataDir/data.xml" `
-    -Tokens @{ PREFIX = $prefix }
+if (-not (Test-Path "$dataDir/data.xml")) {
+    Expand-LabTemplate -Path "13-config-data/data.xml" `
+        -Destination "$dataDir/data.xml" `
+        -Tokens @{ PREFIX = $prefix }
+}
 
-Write-Host "  ✓ data.xml (2 locations, 2 products, 3 items, 2 transactions)" -ForegroundColor Green
+Write-Host "  ✓ data.xml (grocery opening balances; existing exported data preserved)" -ForegroundColor Green
 
 # OPC content-types manifest — CMT packages are Open Packaging Convention archives and
 # need it next to the data files.

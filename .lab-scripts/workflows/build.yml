@@ -19,15 +19,37 @@ jobs:
         with:
           node-version: '22'
       - name: Restore
-        run: dotnet restore WarehouseManagement.slnx
+        run: |
+          dotnet tool restore
+          dotnet restore WarehouseManagement.slnx
       - name: Build (validates Dataverse solutions)
+        if: ${{ hashFiles('src/**/*.csproj') != '' }}
         run: dotnet build WarehouseManagement.slnx --configuration Release --no-restore
       - name: Publish package
+        if: ${{ hashFiles('src/Packages.Main/Packages.Main.csproj') != '' }}
         run: |
           dotnet publish src/Packages.Main/Packages.Main.csproj --configuration Release --no-build -o ./drop
           # The .pdpkg.zip is created alongside the project, not in --output; collect it for deploy
           cp src/Packages.Main/bin/Release/Packages.Main.pdpkg.zip ./drop/
+      - name: Record portable connection binding
+        if: ${{ hashFiles('src/Solutions.Connectors/Other/Customizations.xml') != '' }}
+        shell: pwsh
+        run: |
+          [xml]$xml = Get-Content src/Solutions.Connectors/Other/Customizations.xml -Raw
+          $reference = $xml.SelectSingleNode('//connectionreference')
+          if ($reference) {
+            @{ logicalName = $reference.connectionreferencelogicalname } |
+              ConvertTo-Json | Set-Content ./drop/connection-reference.json
+          }
+      - name: Verify final application payload
+        if: ${{ hashFiles('src/Tests.Plugins/Tests.Plugins.csproj') != '' }}
+        shell: pwsh
+        run: .lab-scripts/Test-LabArtifact.ps1 -Package ./drop/Packages.Main.pdpkg.zip -Complete
       - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('src/Packages.Main/Packages.Main.csproj') != '' }}
         with:
           name: drop
-          path: ./drop/Packages.Main.pdpkg.zip
+          path: |
+            ./drop/Packages.Main.pdpkg.zip
+            ./drop/connection-reference.json
+          if-no-files-found: error

@@ -14,11 +14,11 @@ Feature: Warehouse Picking
         And I open the warehouse picking app
 
     Scenario: Not enough stock blocks the pick
-        Given I open the 'Wireless Mouse' item
+        Given I open the 'Nutella Hazelnut Spread 400g' item
         When I try to pick more than the available quantity
         Then I should see an error that the requested quantity exceeds the available stock
 
     Scenario: A valid pick updates the available quantity
-        Given I open the 'Office Laptop' item
+        Given I open the 'Long Grain Rice 1kg' item
         When I pick a quantity of '5'
         Then the quantity on hand should have decreased by '5'

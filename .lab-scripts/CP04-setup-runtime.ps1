@@ -38,6 +38,10 @@ function Get-ConnectionByIdOrUrl {
         return $null
     }
 
+    $named = $Connections | Where-Object id -eq $Name
+    if ($named -and $named.environmentUrl.TrimEnd('/') -ne $Url.TrimEnd('/')) {
+        throw "Connection '$Name' already targets another environment. Rename it before continuing."
+    }
     return $Connections |
         Where-Object { $_.id -eq $Name -or $_.environmentUrl -eq $Url } |
         Select-Object -First 1
@@ -98,10 +102,14 @@ foreach ($key in $envs.Keys) {
     }
 
     if (-not ($profiles | Where-Object { $_.id -eq $key })) {
-        txc config profile create --name $key --auth $auth --connection $key 2>&1 | Out-Null
+        txc config profile create --name $key --auth $auth --connection $connection.id 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Err "Failed to create $key profile"; exit 1 }
         $profiles = @(txc config profile list --format json | ConvertFrom-Json)
     } else {
+        $profile = $profiles | Where-Object id -eq $key
+        if ($profile.connectionRef -ne $connection.id -or $profile.credentialRef -ne $auth) {
+            throw "Profile '$key' has a different connection or credential. Repair it before continuing."
+        }
         Write-Ok "$key profile exists"
     }
 
@@ -112,7 +120,7 @@ foreach ($key in $envs.Keys) {
 }
 
 # Pin the dev profile as default for local deploys.
-txc config profile select dev | Out-Null
+Invoke-LabNative txc config profile select dev | Out-Null
 Write-Ok "Active profile: dev"
 
 }

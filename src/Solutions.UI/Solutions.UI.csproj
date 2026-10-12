@@ -24,12 +24,12 @@
        supports the type, a generative page has to be created in the environment first (e.g.
        'pac model genpage upload') and then added to this solution with
        'txc env solution component add'. -->
-  <Import Project="Sdk.props" Sdk="TALXIS.DevKit.Build.Sdk" Version="1.8.4" />
+  <Import Project="Sdk.props" Sdk="TALXIS.DevKit.Build.Sdk" Version="1.9.0" />
 
   <ItemGroup>
     <ProjectReference Include="..\Apps.WarehousePicking\Apps.WarehousePicking.csproj" />
     <ProjectReference Include="..\Scripts.UI\Scripts.UI.csproj" />
-    <ProjectReference Include="..\GenPages.Dashboard\warehousedashboard.csproj" />
+    <ProjectReference Include="..\GenPages.Dashboard\warehousedashboard.csproj" Condition="'$(IncludeWarehouseDashboard)' == 'true'" />
   </ItemGroup>
   <PropertyGroup>
     <ProjectType>Solution</ProjectType>
@@ -41,11 +41,11 @@
   </PropertyGroup>
   <Target Name="Publish" />
 
-  <Import Project="Sdk.targets" Sdk="TALXIS.DevKit.Build.Sdk" Version="1.8.4" />
+  <Import Project="Sdk.targets" Sdk="TALXIS.DevKit.Build.Sdk" Version="1.9.0" />
 
   <PropertyGroup>
     <_TalxisGenPagesTargets>$(NuGetPackageRoot)talxis.devkit.build.dataverse.solution/1.8.4/tasks/TALXIS.DevKit.Build.Dataverse.Solution.GenPages.targets</_TalxisGenPagesTargets>
   </PropertyGroup>
-  <Import Project="$(_TalxisGenPagesTargets)" Condition="Exists('$(_TalxisGenPagesTargets)')" />
+  <Import Project="$(_TalxisGenPagesTargets)" Condition="'$(IncludeWarehouseDashboard)' == 'true' and Exists('$(_TalxisGenPagesTargets)')" />
 
 </Project>

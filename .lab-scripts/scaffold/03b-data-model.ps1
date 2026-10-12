@@ -13,7 +13,7 @@
 Write-Host "`n── Solutions.DataModel ──" -ForegroundColor Cyan
 
 if (-not (Get-LabValue 'dataModelScaffolded')) {
-    txc workspace component create pp-solution `
+    Invoke-LabNative txc workspace component create pp-solution `
         --output "src/Solutions.DataModel" `
         --param "PublisherName=$PublisherName" `
         --param "PublisherPrefix=$PublisherPrefix"
@@ -21,7 +21,7 @@ if (-not (Get-LabValue 'dataModelScaffolded')) {
     Write-Host "  ✓ Solutions.DataModel" -ForegroundColor Green
 
     # Add Solutions.DataModel to the Package Deployer project as a .NET ProjectReference
-    dotnet add "src/Packages.Main/Packages.Main.csproj" reference "src/Solutions.DataModel/Solutions.DataModel.csproj"
+    Invoke-LabNative dotnet add "src/Packages.Main/Packages.Main.csproj" reference "src/Solutions.DataModel/Solutions.DataModel.csproj"
 
     Write-Host "  ✓ ProjectReference: DataModel → Packages.Main" -ForegroundColor Green
 
@@ -32,7 +32,7 @@ if (-not (Get-LabValue 'dataModelScaffolded')) {
     Write-Host "`n── Entities (DataModel) ──" -ForegroundColor Cyan
 
     # Warehouse Location
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.DataModel" `
         --param "EntityType=Standard" `
         --param "Behavior=New" `
@@ -45,7 +45,7 @@ if (-not (Get-LabValue 'dataModelScaffolded')) {
     Write-Host "  ✓ Entity: Warehouse Location" -ForegroundColor Green
 
     # Warehouse Item
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.DataModel" `
         --param "EntityType=Standard" `
         --param "Behavior=New" `
@@ -58,7 +58,7 @@ if (-not (Get-LabValue 'dataModelScaffolded')) {
     Write-Host "  ✓ Entity: Warehouse Item" -ForegroundColor Green
 
     # Warehouse Transaction
-    txc workspace component create pp-entity `
+    Invoke-LabNative txc workspace component create pp-entity `
         --output "src/Solutions.DataModel" `
         --param "EntityType=Standard" `
         --param "Behavior=New" `

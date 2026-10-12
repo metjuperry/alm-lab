@@ -24,16 +24,23 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot/lib/Lab.Common.ps1"
 $PublisherName = Get-LabValue 'publisherName' 'ALMLab'
 $PublisherPrefix = Get-LabValue 'publisherPrefix' 'almlab'
+Assert-LabProfile dev
+$devProfile = Get-LabValue 'devProfile'
 
+Invoke-LabStage cp11-data {
 Write-Step "CP11 — Integrate external data (step 1: data model)"
 Push-Location $LabRoot
 try {
     . "$PSScriptRoot/scaffold/15-product-table.ps1"
-    dotnet build --nologo --verbosity quiet
+    Invoke-LabNative dotnet build --nologo --verbosity quiet
     if ($LASTEXITCODE -ne 0) { Write-Err "dotnet build failed"; exit 1 }
+    if ($env:LAB_LOCAL_MODE -ne '1') {
+        Invoke-LabNative dotnet publish src/Packages.Main/Packages.Main.csproj -c Debug --nologo --verbosity quiet
+        Invoke-LabNative txc env pkg import src/Packages.Main/bin/Debug/Packages.Main.pdpkg.zip --profile $devProfile
+    }
 } finally { Pop-Location }
 
-Save-Checkpoint -Id "cp11" -Message "Add Product table and Item lookup for external data integration" -Body @'
+Save-Checkpoint -Id "cp11-data" -Message "Add Product table and Item lookup for external data integration" -Body @'
 Add the data model for external product-catalog integration: a dedicated Product table for barcode-sourced data (name, brand, quantity, image), and a lookup column linking Item to Product. No connector or UI yet - those land in follow-up checkpoint updates.
 
 ## Changes
@@ -43,6 +50,8 @@ Add the data model for external product-catalog integration: a dedicated Product
 - dotnet build --nologo --verbosity quiet passes from the repository root
 '@
 
+}
+Invoke-LabStage cp11-connector {
 Write-Step "CP11 — Integrate external data (step 2: connector)"
 Push-Location $LabRoot
 try {
@@ -54,18 +63,18 @@ $devProfile = Get-LabValue 'devProfile'
 if (-not $devUrl -or -not $devProfile) { Write-Err "Dev environment not found in lab state. Run CP04 first."; exit 1 }
 
 if ($env:LAB_LOCAL_MODE) {
-    Write-Info "LAB_LOCAL_MODE: skipped — would build Solutions.Connectors (Release) and run"
+    Write-Info "LAB_LOCAL_MODE: skipped — would build Solutions.Connectors (Debug) and run"
     Write-Info "  'txc env pkg import' to deploy it to Dev ($devUrl) on its own, independently"
     Write-Info "  of the rest of the app - the same way the Grid PCF control deploys in CP10."
 } else {
-    Write-Info "Building Solutions.Connectors (Release)..."
+    Write-Info "Building Solutions.Connectors (Debug)..."
     Push-Location "$LabRoot/src/Solutions.Connectors"
     try {
-        dotnet build -c Release --nologo --verbosity quiet
+        Invoke-LabNative dotnet build -c Debug --nologo --verbosity quiet
         if ($LASTEXITCODE -ne 0) { Write-Err "Solutions.Connectors build failed"; exit 1 }
     } finally { Pop-Location }
 
-    $connectorPkg = Get-ChildItem (Join-Path $LabRoot "src/Solutions.Connectors/bin/Release") -Filter "Solutions.Connectors.zip" -Recurse | Select-Object -First 1
+    $connectorPkg = Get-ChildItem (Join-Path $LabRoot "src/Solutions.Connectors/bin/Debug") -Filter "Solutions.Connectors.zip" -Recurse | Select-Object -First 1
     if (-not $connectorPkg) { Write-Err "Solutions.Connectors.zip not found after build"; exit 1 }
 
     Write-Info "Deploying Solutions.Connectors to Dev environment ($devUrl)..."
@@ -74,7 +83,7 @@ if ($env:LAB_LOCAL_MODE) {
     Write-Ok "Connectors.OpenFoodFacts deployed to Dev - try it in the maker portal's connector test pane before wiring it into the code app."
 }
 
-Save-Checkpoint -Id "cp11" -Message "Add Open Food Facts custom connector, deployed to Dev" -Body @'
+Save-Checkpoint -Id "cp11-connector" -Message "Add Open Food Facts custom connector, deployed to Dev" -Body @'
 Add the Connectors.OpenFoodFacts custom connector project (GET /product/{barcode}.json, no auth, custom code for the required User-Agent header and response flattening) packaged in its own Solutions.Connectors solution, and deploy it to the Dev environment. Deployed standalone - the code app is wired to it in a later checkpoint update.
 
 ## Changes
@@ -86,9 +95,12 @@ Add the Connectors.OpenFoodFacts custom connector project (GET /product/{barcode
 - connector appears in the Dev environment and returns real data from the maker portal's test pane for a known EAN (e.g. 3017620422003)
 '@
 
+}
+Invoke-LabStage cp11-binding {
 Write-Step "CP11 — Integrate external data (step 3: wire connector + Product into the code app)"
 Push-Location $LabRoot
 try {
+    & "$PSScriptRoot/scaffold/17a-connection-reference.ps1"
     . "$PSScriptRoot/scaffold/17-connector-datasource.ps1"
     Push-Location "$LabRoot/src/Apps.WarehousePicking"
     try {
@@ -97,7 +109,7 @@ try {
     } finally { Pop-Location }
 } finally { Pop-Location }
 
-Save-Checkpoint -Id "cp11" -Message "Wire the Product table and Open Food Facts connector into the code app" -Body @'
+Save-Checkpoint -Id "cp11-binding" -Message "Wire the Product table and Open Food Facts connector into the code app" -Body @'
 Register the Product table as a code app data source alongside the existing 3, and wire the Open Food Facts connector: typed model/service files plus a dataSourcesInfo.ts entry for its GetProductByBarcode operation, so the app can call it. Binding a live Dev connection (pa connection create + pa app add data-source --connector) is a separate, LAB_LOCAL_MODE-gated step here - run it once you have the connector deployed to get a working runtime connection.
 
 ## Changes
@@ -108,6 +120,8 @@ Register the Product table as a code app data source alongside the existing 3, a
 - npm run build succeeds in src/Apps.WarehousePicking
 '@
 
+}
+Invoke-LabStage cp11-ui {
 Write-Step "CP11 — Integrate external data (step 4: barcode scan UI)"
 Push-Location $LabRoot
 try {
@@ -119,7 +133,12 @@ try {
     } finally { Pop-Location }
 } finally { Pop-Location }
 
-Save-Checkpoint -Id "cp11" -Message "Add barcode scan UI to the item detail page" -Body @'
+if ($env:LAB_LOCAL_MODE -ne '1') {
+    Invoke-LabNative dotnet publish "$LabRoot/src/Packages.Main/Packages.Main.csproj" -c Debug --nologo --verbosity quiet
+    Invoke-LabNative txc env pkg import "$LabRoot/src/Packages.Main/bin/Debug/Packages.Main.pdpkg.zip" --profile $devProfile
+}
+
+Save-Checkpoint -Id "cp11-ui" -Message "Add barcode scan UI to the item detail page" -Body @'
 Add a "Scan Barcode" button to the item detail page. It opens a dialog that decodes a barcode with the device camera (or accepts one typed in manually), looks it up via the Open Food Facts connector, and on confirmation upserts a Product record (matched by EAN) and links it to the item.
 
 ## Changes
@@ -129,4 +148,9 @@ Add a "Scan Barcode" button to the item detail page. It opens a dialog that deco
 - npm run build succeeds in src/Apps.WarehousePicking
 - manual: npm run dev, open an item, Scan Barcode, type a known EAN (e.g. 3017620422003), confirm the lookup preview and Link to Item
 '@
+}
+if (-not (Invoke-LabNative git -C $LabRoot status --porcelain) -and
+    [int](Invoke-LabNative git -C $LabRoot rev-list --count main..HEAD) -eq 0) {
+    Invoke-LabNative git -C $LabRoot switch main --quiet
+}
 Write-Host "`nNext: .lab-scripts/CP12-move-configuration.ps1" -ForegroundColor Cyan

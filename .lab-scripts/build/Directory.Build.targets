@@ -1,0 +1,83 @@
+<Project>
+  <!-- The draft Power Automate flow under Workflows/ is not part of the lab: drop it, and its
+       RootComponent, from the staged copy only. Sources stay untouched; set
+       LabIncludeWorkflows=true to pack it. -->
+  <Target Name="LabExcludeWorkflows"
+          AfterTargets="CopyCdsSolutionContent"
+          Condition="'$(ProjectType)' == 'Solution' and '$(LabIncludeWorkflows)' != 'true'">
+    <RemoveDir Directories="$(SolutionPackagerMetadataWorkingDirectory)/Workflows" />
+    <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)ExcludeWorkflows.ps1&quot; -MetadataDirectory &quot;$(SolutionPackagerMetadataWorkingDirectory)&quot;" />
+  </Target>
+  <!-- Preserve validation, but run it against this build's staged content
+       (TALXIS/tools-devkit-build#122), not stale files from a previous build. -->
+  <Target Name="LabStageBeforeValidation"
+          BeforeTargets="_EnsureCustomizationNodesBeforePackage;_ValidateSolutionBeforePackage;_ValidateQuickFindViewsBeforePackage"
+          DependsOnTargets="ProcessCdsProjectReferencesOutputs"
+          Condition="'$(ProjectType)' == 'Solution'" />
+  <!-- TALXIS/tools-devkit-build#118: verify the archive before accepting a
+       SystemForm false positive. Other pack errors remain fatal. -->
+  <UsingTask TaskName="InvokeSolutionPackager" Override="true"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll"
+             Condition="'$(ProjectType)' == 'Solution'">
+    <ParameterGroup>
+      <Action ParameterType="System.String" Required="true" />
+      <PackageType ParameterType="System.String" />
+      <SolutionRootDirectory ParameterType="System.String" />
+      <PathToZipFile ParameterType="System.String" Required="true" />
+      <ErrorLevel ParameterType="System.String" />
+      <LogFilePath ParameterType="System.String" />
+      <MappingFilePath ParameterType="System.String" />
+      <Localize ParameterType="System.Boolean" />
+      <LocalTemplate ParameterType="System.String" />
+      <UseUnmanagedFileForMissingManaged ParameterType="System.Boolean" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.Collections.Generic" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        try
+        {
+            var root = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (root != null && !File.Exists(Path.Combine(root.FullName, ".lab-scripts", "build", "PackSolution.ps1")))
+                root = root.Parent;
+            if (root == null) throw new InvalidOperationException("Lab packaging helper not found.");
+            var start = new ProcessStartInfo("pwsh") {
+                UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true
+            };
+            // Inline tasks compile against netstandard2.0; the .NET 10 build host
+            // exposes ArgumentList at runtime, avoiding shell quoting entirely.
+            var property = typeof(ProcessStartInfo).GetProperty("ArgumentList");
+            var arguments = property == null ? null : property.GetValue(start) as ICollection<string>;
+            if (arguments == null) throw new InvalidOperationException("The lab requires a modern .NET build host.");
+            foreach (var argument in new[] { "-NoProfile", "-NonInteractive", "-File",
+                Path.Combine(root.FullName, ".lab-scripts", "build", "PackSolution.ps1"),
+                "-Action", Action, "-SourceDirectory", SolutionRootDirectory, "-ZipPath", PathToZipFile,
+                "-PackageType", string.IsNullOrEmpty(PackageType) ? "Unmanaged" : PackageType })
+                arguments.Add(argument);
+            if (!string.IsNullOrEmpty(LogFilePath)) { arguments.Add("-LogPath"); arguments.Add(LogFilePath); }
+            if (!string.IsNullOrEmpty(MappingFilePath)) { arguments.Add("-MapPath"); arguments.Add(MappingFilePath); }
+            if (Localize) arguments.Add("-Localize");
+            if (!string.IsNullOrEmpty(LocalTemplate)) { arguments.Add("-SourceLocale"); arguments.Add(LocalTemplate); }
+            if (UseUnmanagedFileForMissingManaged) arguments.Add("-UseUnmanagedFileForMissingManaged");
+            using (var process = Process.Start(start))
+            {
+                var output = process.StandardOutput.ReadToEndAsync();
+                var error = process.StandardError.ReadToEndAsync();
+                process.WaitForExit();
+                Log.LogMessage(MessageImportance.High, output.GetAwaiter().GetResult());
+                var detail = error.GetAwaiter().GetResult();
+                if (process.ExitCode != 0) {
+                    Log.LogError("Verified solution packaging failed: " + detail);
+                    return false;
+                }
+                if (!string.IsNullOrWhiteSpace(detail)) Log.LogWarning(detail);
+            }
+        }
+        catch (Exception error) { Log.LogErrorFromException(error); return false; }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+</Project>

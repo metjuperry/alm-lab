@@ -38,8 +38,10 @@ try {
 
     New-Item -ItemType Directory -Path "src/Tests.UI/Features/Discovered" -Force | Out-Null
     # Full source: .lab-scripts/templates/16-bdd-explorer/EXPLORATION-NOTES.md
-    Expand-LabTemplate -Path "16-bdd-explorer/EXPLORATION-NOTES.md" `
-        -Destination "src/Tests.UI/Features/Discovered/EXPLORATION-NOTES.md"
+    if (-not (Test-Path "src/Tests.UI/Features/Discovered/EXPLORATION-NOTES.md")) {
+        Expand-LabTemplate -Path "16-bdd-explorer/EXPLORATION-NOTES.md" `
+            -Destination "src/Tests.UI/Features/Discovered/EXPLORATION-NOTES.md"
+    }
     Write-Ok "Features/Discovered/ scaffolded"
 
     # Keep Discovered/ out of the compiled suite. Reqnroll's .props globs **\*.feature into
@@ -76,4 +78,4 @@ Add the last step of the BDD-agent chain: an agent that only ever sees the runni
 ## Testing
 - no build changes; validate by running the agent against the dev environment and confirming EXPLORATION-NOTES.md and any Discovered/*.feature files only reference what'"'"'s observable in the running UI
 '@
-Write-Host "`n✓ Lab complete — you built the app, tested it, and closed the loop with agents that plan and explore it." -ForegroundColor Green
+Write-Host "`nExplorer definition installed. Run it against the app and review its findings; this checkpoint does not execute an agent." -ForegroundColor Cyan

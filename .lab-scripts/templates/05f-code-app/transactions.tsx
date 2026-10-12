@@ -33,6 +33,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { requireSuccess } from "@/utils/operationResult";
 import { ArrowRightLeft, Plus, RefreshCw } from "lucide-react";
 
 export default function TransactionsPage() {
@@ -57,11 +58,11 @@ export default function TransactionsPage() {
         ],
         orderBy: ["__PREFIX___transactiondate desc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
-  const { data: items } = useQuery({
+  const { data: items, error: lookupError } = useQuery({
     queryKey: ["warehouseItemsLookup"],
     queryFn: async () => {
       const result = await __PASCAL___warehouseitemsService.getAll({
@@ -69,22 +70,24 @@ export default function TransactionsPage() {
         filter: "statecode eq 0",
         orderBy: ["__PREFIX___name asc"],
       });
-      return result.data ?? [];
+      return requireSuccess(result);
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return __PASCAL___warehousetransactionsService.create({
+      const result = await __PASCAL___warehousetransactionsService.create({
         __PREFIX___name: txName,
         __PREFIX___quantity: txQuantity,
         __PREFIX___transactiontype: Number(txType) as any,
         __PREFIX___transactiondate: new Date().toISOString(),
         "__PREFIX___itemid@odata.bind": `/__PREFIX___warehouseitems(${txItemId})`,
       } as any);
+      requireSuccess(result);
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["allTransactions"] });
+      await queryClient.invalidateQueries({ queryKey: ["warehouseItems"] });
       toast.success("Transaction created successfully");
       resetForm();
     },
@@ -112,6 +115,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {lookupError && <p role="alert">{String(lookupError)}</p>}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ArrowRightLeft className="h-8 w-8 text-primary" />

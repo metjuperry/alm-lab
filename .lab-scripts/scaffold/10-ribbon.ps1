@@ -23,7 +23,7 @@ Write-Host "  ✓ RibbonActions.ts" -ForegroundColor Green
 # Rebuild Scripts.UI with the new file
 Write-Host "  → Rebuilding Scripts.UI..." -ForegroundColor White
 cd src/Scripts.UI
-dotnet build --nologo --verbosity quiet
+Invoke-LabNative dotnet build --nologo --verbosity quiet
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Scripts rebuild succeeded" -ForegroundColor Green
 } else {
@@ -35,7 +35,7 @@ cd ../..
 #                      Ribbon Button: Check Stock Levels (warehouseitem form)
 # ──────────────────────────────────────────────────────────────────────────────────────────
 
-txc workspace component create pp-ribbon-button `
+Invoke-LabNative txc workspace component create pp-ribbon-button `
     --output "src/Solutions.UI" `
     --param "Location=Form" `
     --param "EntityLogicalName=${PublisherPrefix}_warehouseitem" `
@@ -49,7 +49,7 @@ txc workspace component create pp-ribbon-button `
 Write-Host "  ✓ Ribbon button: Check Stock Levels (warehouseitem form)" -ForegroundColor Green
 
 # Add PrimaryControl parameter so the function receives the form context
-txc workspace component create pp-ribbon-command-parameter `
+Invoke-LabNative txc workspace component create pp-ribbon-command-parameter `
     --output "src/Solutions.UI" `
     --param "EntityLogicalName=${PublisherPrefix}_warehouseitem" `
     --param "PublisherPrefix=$PublisherPrefix" `

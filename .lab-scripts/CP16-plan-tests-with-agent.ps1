@@ -5,13 +5,13 @@
 # ╚════════════════════════════════════════════════════════════════════════════════════════╝
 #
 # Conceptually this is step ONE of the BDD-agent authoring chain: give an agent a prompt,
-# it explores the running app, and it hands back .feature files. It's checkpoint 15, not
+# it explores the running app, and it hands back .feature files. It's checkpoint 16, not
 # checkpoint 1, because that agent needs something to reuse - the frozen step-binding
-# catalog under src/Tests.UI/Support/Bindings/ that CP13 scaffolds. Without that catalog
+# catalog under src/Tests.UI/Support/Bindings/ that CP14 scaffolds. Without that catalog
 # the agent has nothing to check its own scenarios against and will happily invent steps
-# nobody can execute. So: build the bindings first (CP13), plan against them from here on.
+# nobody can execute. So: build the bindings first (CP14), plan against them from here on.
 #
-# This checkpoint doesn't call an LLM itself - like CP13's own comment says, see
+# This checkpoint doesn't call an LLM itself - like CP14's own comment says, see
 # TALXIS/docs-patterns-practices (bdd-agent-v2) for that. It scaffolds the agent
 # definition and the TestPlans/ convention so the workflow is: open this repo in an
 # AI coding assistant that supports custom agents (GitHub Copilot agent mode, Claude
@@ -31,7 +31,7 @@ Write-Step "CP16 — BDD planning agent"
 Push-Location $LabRoot
 try {
     if (-not (Test-Path "src/Tests.UI/Support/Bindings")) {
-        Write-Err "src/Tests.UI/Support/Bindings not found — run CP13 first (the planner needs the bindings catalog to plan against)."
+        Write-Err "src/Tests.UI/Support/Bindings not found — run CP14 first (the planner needs the bindings catalog to plan against)."
         exit 1
     }
 
@@ -48,6 +48,11 @@ try {
     Expand-LabTemplate -Path "15-bdd-planner/TestPlans-README.md" `
         -Destination "TestPlans/README.md"
     Write-Ok "TestPlans/ scaffolded"
+    $project = 'src/Tests.UI/Tests.UI.csproj'
+    $content = Get-Content $project -Raw
+    if ($content -notmatch 'Remove="Features/Planned/') {
+        $content.Replace('</Project>', '<ItemGroup><ReqnrollFeatureFile Remove="Features/Planned/**/*.feature" /></ItemGroup></Project>') | Set-Content $project
+    }
 } finally { Pop-Location }
 
 Save-Checkpoint -Id "cp16" -Message "Add BDD planning agent and TestPlans convention" -Body @'

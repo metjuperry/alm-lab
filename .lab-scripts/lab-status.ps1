@@ -26,40 +26,30 @@ Write-Step "Lab status"
 # Each entry: the checkpoint id, the git tag Save-Checkpoint leaves behind, and the
 # lab-state keys that checkpoint is expected to have populated (if any — several
 # checkpoints only scaffold files under src/ and don't add new lab-state).
-$checkpoints = @(
-    @{ Id = "cp01"; Keys = @("txcAuth", "tenantId", "randomIdentifier") }
-    @{ Id = "cp02"; Keys = @("slnxName", "publisherName", "publisherPrefix") }
-    @{ Id = "cp03"; Keys = @("repo", "mainRulesetId", "mainRulesetName") }
-    @{ Id = "cp04"; Keys = @("devEnvUrl", "testEnvUrl", "devProfile", "testProfile") }
-    @{ Id = "cp05"; Keys = @("appId") }
-    @{ Id = "cp06"; Keys = @() }
-    @{ Id = "cp07"; Keys = @() }
-    @{ Id = "cp08"; Keys = @() }
-    @{ Id = "cp09"; Keys = @() }
-    @{ Id = "cp10"; Keys = @() }
-    @{ Id = "cp11"; Keys = @() }
-    @{ Id = "cp12"; Keys = @("configDataDirectory", "configDataSchemaPath", "configDataFilePath") }
-    @{ Id = "cp13"; Keys = @("mainRulesetId") }
-    @{ Id = "cp14"; Keys = @() }
-    @{ Id = "cp15"; Keys = @() }
-)
+$checkpoints = @(Get-LabCheckpoints)
 
-$tags = @(git -C $LabRoot tag --list "cp*" 2>$null)
+$tags = @(Invoke-LabNative git -C $LabRoot tag --merged HEAD --list 'cp*')
 $firstMissing = $null
 
 Write-Host "`n── Checkpoints ──" -ForegroundColor Cyan
 foreach ($cp in $checkpoints) {
-    $tagged = $cp.Id -in $tags
+    $requiredTags = if ($cp.Tags) { $cp.Tags } else { @($cp.Id) }
+    $tagged = @($requiredTags | Where-Object {
+        $id = $_
+        -not ($tags | Where-Object { $_ -eq $id -or $_ -like "$id-*" })
+    }).Count -eq 0
     $missingKeys = @($cp.Keys | Where-Object { -not (Get-LabValue $_) })
+    if (Get-LabValue 'localMode') { $missingKeys = @() }
+    $missingKeys += @($cp.Files | Where-Object { -not (Test-Path (Join-Path $LabRoot $_)) })
 
     if ($tagged -and $missingKeys.Count -eq 0) {
-        Write-Ok "$($cp.Id) — done"
+        Write-Ok "$($cp.Id) — source checkpoint recorded (live deployment is separate)"
     } elseif ($tagged -and $missingKeys.Count -gt 0) {
         Write-Warn2 "$($cp.Id) — tagged, but lab-state is missing: $($missingKeys -join ', ')"
     } else {
         Write-Info "$($cp.Id) — not run"
-        if (-not $firstMissing) { $firstMissing = $cp.Id }
     }
+    if ((-not $tagged -or $missingKeys.Count) -and -not $cp.Optional -and -not $firstMissing) { $firstMissing = $cp.Id }
 }
 
 # ── 2. Live CLI auth vs what lab-state claims ───────────────────────────────────────────
@@ -108,7 +98,7 @@ foreach ($profileKey in @('devProfile', 'testProfile')) {
 # ── 3. What's next ───────────────────────────────────────────────────────────────────────
 Write-Host "`n── Next ──" -ForegroundColor Cyan
 if ($firstMissing) {
-    Write-Info "Next runnable checkpoint: .lab-scripts/$firstMissing-*.ps1"
+    Write-Info "First incomplete core checkpoint: .lab-scripts/$firstMissing-*.ps1. Resolve auth warnings before running it."
 } else {
-    Write-Ok "All checkpoints done."
+    Write-Ok "Core source checkpoints recorded. Verify both deployments and the final app walkthrough."
 }

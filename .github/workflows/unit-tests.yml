@@ -22,5 +22,11 @@ jobs:
         run: dotnet test src/Tests.Plugins/Tests.Plugins.csproj --configuration Release
       - name: Build script bundle
         run: dotnet build src/Scripts.UI/Scripts.UI.csproj --configuration Release
-      - name: Script unit tests (Jest via dotnet test)
-        run: dotnet test src/Tests.Scripts/Tests.Scripts.csproj --configuration Release
+      - name: Script unit tests (Jest)
+        run: npm test --prefix src/Tests.Scripts -- --ci
+      - name: Lab helper and SDK-result tests
+        run: |
+          pwsh -NoProfile -File .lab-scripts/tests/Lab.Common.Tests.ps1
+          pwsh -NoProfile -File .lab-scripts/tests/PackSolution.Tests.ps1
+          pwsh -NoProfile -File .lab-scripts/tests/ConnectionReference.Tests.ps1
+          node --experimental-strip-types --test .lab-scripts/tests/operation-result.test.mjs

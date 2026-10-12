@@ -46,35 +46,35 @@
     <records>
       <record id="6e0bd72a-0e3b-487c-b143-4c694e9e488a">
         <field name="__PREFIX___warehouseitemid" value="6e0bd72a-0e3b-487c-b143-4c694e9e488a" />
-        <field name="__PREFIX___name" value="Office Laptop" />
-        <field name="__PREFIX___sku" value="LTP-001" />
+        <field name="__PREFIX___name" value="Long Grain Rice 1kg" />
+        <field name="__PREFIX___sku" value="RCE-001" />
         <field name="__PREFIX___availablequantity" value="100" />
-        <field name="__PREFIX___category" value="100000000" />
+        <field name="__PREFIX___category" value="100000002" />
         <field name="__PREFIX___isperishable" value="False" />
-        <field name="__PREFIX___unitprice" value="899.00" />
+        <field name="__PREFIX___unitprice" value="2.49" />
         <field name="__PREFIX___reorderpoint" value="20" />
         <field name="__PREFIX___locationid" value="2592a040-83b7-464e-ac3e-faff2031398c" lookupentity="__PREFIX___warehouselocation" lookupentityname="Main Warehouse" />
       </record>
       <record id="b9201d73-02eb-4065-bf4d-b5f5c5bd4b70">
         <field name="__PREFIX___warehouseitemid" value="b9201d73-02eb-4065-bf4d-b5f5c5bd4b70" />
-        <field name="__PREFIX___name" value="Wireless Mouse" />
-        <field name="__PREFIX___sku" value="MSE-002" />
+        <field name="__PREFIX___name" value="Nutella Hazelnut Spread 400g" />
+        <field name="__PREFIX___sku" value="NUT-002" />
         <field name="__PREFIX___availablequantity" value="5" />
-        <field name="__PREFIX___category" value="100000000" />
+        <field name="__PREFIX___category" value="100000002" />
         <field name="__PREFIX___isperishable" value="False" />
-        <field name="__PREFIX___unitprice" value="19.99" />
+        <field name="__PREFIX___unitprice" value="4.99" />
         <field name="__PREFIX___reorderpoint" value="10" />
         <field name="__PREFIX___locationid" value="2592a040-83b7-464e-ac3e-faff2031398c" lookupentity="__PREFIX___warehouselocation" lookupentityname="Main Warehouse" />
         <field name="__PREFIX___productid" value="611e6410-7c90-4c63-abf7-825af79eb636" lookupentity="__PREFIX___product" lookupentityname="Nutella" />
       </record>
       <record id="e42c5c02-0cd1-4fe5-b6ef-c2c620f1bfcf">
         <field name="__PREFIX___warehouseitemid" value="e42c5c02-0cd1-4fe5-b6ef-c2c620f1bfcf" />
-        <field name="__PREFIX___name" value="Laser Printer" />
-        <field name="__PREFIX___sku" value="PRN-003" />
+        <field name="__PREFIX___name" value="Olive Oil 1L" />
+        <field name="__PREFIX___sku" value="OIL-003" />
         <field name="__PREFIX___availablequantity" value="50" />
-        <field name="__PREFIX___category" value="100000000" />
+        <field name="__PREFIX___category" value="100000002" />
         <field name="__PREFIX___isperishable" value="False" />
-        <field name="__PREFIX___unitprice" value="249.50" />
+        <field name="__PREFIX___unitprice" value="8.99" />
         <field name="__PREFIX___reorderpoint" value="15" />
         <field name="__PREFIX___locationid" value="f9c0881c-258f-42eb-b58b-84f2d37cda0e" lookupentity="__PREFIX___warehouselocation" lookupentityname="Overflow Storage" />
       </record>
@@ -86,18 +86,29 @@
       <record id="a0cdb965-1279-4f0a-a5db-58f335b9863e">
         <field name="__PREFIX___warehousetransactionid" value="a0cdb965-1279-4f0a-a5db-58f335b9863e" />
         <field name="__PREFIX___name" value="TRX-0001" />
-        <field name="__PREFIX___itemid" value="6e0bd72a-0e3b-487c-b143-4c694e9e488a" lookupentity="__PREFIX___warehouseitem" lookupentityname="Office Laptop" />
-        <field name="__PREFIX___quantity" value="20" />
+        <field name="__PREFIX___itemid" value="6e0bd72a-0e3b-487c-b143-4c694e9e488a" lookupentity="__PREFIX___warehouseitem" lookupentityname="Long Grain Rice 1kg" />
+        <field name="__PREFIX___quantity" value="100" />
         <field name="__PREFIX___transactiontype" value="100000000" />
+        <field name="__PREFIX___transactiondate" value="2026-01-15T00:00:00Z" />
         <field name="__PREFIX___referencenumber" value="PO-2026-001" />
       </record>
       <record id="cc2d0547-3872-4f50-8db9-0cbb5407e535">
         <field name="__PREFIX___warehousetransactionid" value="cc2d0547-3872-4f50-8db9-0cbb5407e535" />
         <field name="__PREFIX___name" value="TRX-0002" />
-        <field name="__PREFIX___itemid" value="b9201d73-02eb-4065-bf4d-b5f5c5bd4b70" lookupentity="__PREFIX___warehouseitem" lookupentityname="Wireless Mouse" />
+        <field name="__PREFIX___itemid" value="b9201d73-02eb-4065-bf4d-b5f5c5bd4b70" lookupentity="__PREFIX___warehouseitem" lookupentityname="Nutella Hazelnut Spread 400g" />
         <field name="__PREFIX___quantity" value="5" />
-        <field name="__PREFIX___transactiontype" value="100000001" />
-        <field name="__PREFIX___referencenumber" value="SO-2026-014" />
+        <field name="__PREFIX___transactiontype" value="100000000" />
+        <field name="__PREFIX___transactiondate" value="2026-01-15T00:00:00Z" />
+        <field name="__PREFIX___referencenumber" value="PO-2026-002" />
+      </record>
+      <record id="30ae7af2-35de-4b5f-a2a0-59e211458f16">
+        <field name="__PREFIX___warehousetransactionid" value="30ae7af2-35de-4b5f-a2a0-59e211458f16" />
+        <field name="__PREFIX___name" value="TRX-0003" />
+        <field name="__PREFIX___itemid" value="e42c5c02-0cd1-4fe5-b6ef-c2c620f1bfcf" lookupentity="__PREFIX___warehouseitem" lookupentityname="Olive Oil 1L" />
+        <field name="__PREFIX___quantity" value="50" />
+        <field name="__PREFIX___transactiontype" value="100000000" />
+        <field name="__PREFIX___transactiondate" value="2026-01-15T00:00:00Z" />
+        <field name="__PREFIX___referencenumber" value="PO-2026-003" />
       </record>
     </records>
     <m2mrelationships />

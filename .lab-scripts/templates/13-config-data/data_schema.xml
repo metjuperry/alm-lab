@@ -48,6 +48,7 @@
       <field displayname="Item" name="__PREFIX___itemid" type="entityreference" lookupType="__PREFIX___warehouseitem" customfield="true" />
       <field displayname="Quantity" name="__PREFIX___quantity" type="number" customfield="true" />
       <field displayname="Transaction Type" name="__PREFIX___transactiontype" type="optionsetvalue" customfield="true" />
+      <field displayname="Transaction Date" name="__PREFIX___transactiondate" type="datetime" customfield="true" />
       <field displayname="Reference Number" name="__PREFIX___referencenumber" type="string" customfield="true" />
     </fields>
   </entity>

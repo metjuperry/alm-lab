@@ -29,7 +29,7 @@ if (-not (Test-Path (Join-Path $DataDir "data_schema.xml"))) {
 }
 
 Write-Host "  → Importing CMT data package from $DataDir ..." -ForegroundColor White
-txc data pkg import $DataDir --allow-production
+Invoke-LabNative txc data pkg import $DataDir --allow-production
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  ✓ Sample data imported successfully" -ForegroundColor Green
 } else {
