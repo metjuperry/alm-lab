@@ -6,5 +6,13 @@
   "publisherPrefix": "lab",
   "repo": "metjuperry/alm-lab",
   "mainRulesetId": "stub-not-created",
-  "mainRulesetName": "lab-main-protection"
+  "mainRulesetName": "lab-main-protection",
+  "devEnvUrl": "https://wm-dev-2102.crm.dynamics.com",
+  "devEnvId": "ee27d895-8dde-e0ca-9843-451c2ad62f03",
+  "devOrgId": "36b1878f-d4d2-f111-be87-000d3a5cb413",
+  "devProfile": "dev",
+  "testEnvUrl": "https://wm-test-2102.crm.dynamics.com",
+  "testEnvId": "f769ef38-9bfd-e6a0-bfe6-94e06d85cd16",
+  "testOrgId": "ab9130c4-d1d2-f111-be87-6045bd06d908",
+  "testProfile": "test"
 }
