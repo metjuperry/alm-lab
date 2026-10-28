@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <SdkMessageProcessingStep Name="Plugins.Warehouse.SubtractQuantityPlugin: Create of lab_warehousetransaction" SdkMessageProcessingStepId="{d6044f75-0b55-96b2-c419-830999410cb2}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SdkMessageId>9ebdbb1b-ea3e-db11-86a7-000a3a5473e8</SdkMessageId>
   <PluginTypeName>Plugins.Warehouse.SubtractQuantityPlugin, PluginsWarehouse, Version=1.0.0.0, Culture=neutral, PublicKeyToken=77c86d63478c3286</PluginTypeName>

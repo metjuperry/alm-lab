@@ -1,0 +1,135 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "lab_sharedcommondataserviceforapps"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 5
+          },
+          "metadata": {
+            "operationMetadataId": "e6a66cf8-4a02-4bbe-ad80-74f16a18c697"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "List_low_stock_items": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "lab_warehouseitems",
+              "$select": "lab_warehouseitemid",
+              "$filter": "lab_availablequantity lt 10 and lab_needsrestock ne true"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Flag_each_low_stock_item": {
+          "foreach": "@outputs('List_low_stock_items')?['body/value']",
+          "actions": {
+            "Set_needs_restock": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateOnlyRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "lab_warehouseitems",
+                  "recordId": "@items('Flag_each_low_stock_item')?['lab_warehouseitemid']",
+                  "item/lab_needsrestock": true
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "List_low_stock_items": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "List_restocked_items": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "lab_warehouseitems",
+              "$select": "lab_warehouseitemid",
+              "$filter": "lab_availablequantity ge 10 and lab_needsrestock eq true"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Clear_each_restocked_item": {
+          "foreach": "@outputs('List_restocked_items')?['body/value']",
+          "actions": {
+            "Clear_needs_restock": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateOnlyRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "lab_warehouseitems",
+                  "recordId": "@items('Clear_each_restocked_item')?['lab_warehouseitemid']",
+                  "item/lab_needsrestock": false
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "List_restocked_items": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
