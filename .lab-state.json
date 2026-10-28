@@ -40,5 +40,8 @@
   "productDataSourceScaffolded": true,
   "openFoodFactsConnectionId": "9d48e5e5-1946-4a37-b181-ffacee76965e",
   "connectorDataSourceScaffolded": true,
-  "barcodeScanUiScaffolded": true
+  "barcodeScanUiScaffolded": true,
+  "configDataDirectory": "/workspace/alm-lab/src/Packages.Main/Data",
+  "configDataSchemaPath": "/workspace/alm-lab/src/Packages.Main/Data/data_schema.xml",
+  "configDataFilePath": "/workspace/alm-lab/src/Packages.Main/Data/data.xml"
 }
