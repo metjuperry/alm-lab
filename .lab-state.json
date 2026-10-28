@@ -44,5 +44,7 @@
   "configDataDirectory": "/workspace/alm-lab/src/Packages.Main/Data",
   "configDataSchemaPath": "/workspace/alm-lab/src/Packages.Main/Data/data_schema.xml",
   "configDataFilePath": "/workspace/alm-lab/src/Packages.Main/Data/data.xml",
-  "testsUiScaffolded": true
+  "testsUiScaffolded": true,
+  "pluginsTestsScaffolded": true,
+  "scriptsTestsScaffolded": true
 }
