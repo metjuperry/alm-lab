@@ -46,5 +46,7 @@
   "configDataFilePath": "/workspace/alm-lab/src/Packages.Main/Data/data.xml",
   "testsUiScaffolded": true,
   "pluginsTestsScaffolded": true,
-  "scriptsTestsScaffolded": true
+  "scriptsTestsScaffolded": true,
+  "needsRestockColumnScaffolded": true,
+  "backgroundFlowScaffolded": true
 }
