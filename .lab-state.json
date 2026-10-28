@@ -43,5 +43,6 @@
   "barcodeScanUiScaffolded": true,
   "configDataDirectory": "/workspace/alm-lab/src/Packages.Main/Data",
   "configDataSchemaPath": "/workspace/alm-lab/src/Packages.Main/Data/data_schema.xml",
-  "configDataFilePath": "/workspace/alm-lab/src/Packages.Main/Data/data.xml"
+  "configDataFilePath": "/workspace/alm-lab/src/Packages.Main/Data/data.xml",
+  "testsUiScaffolded": true
 }
