@@ -48,5 +48,6 @@
   "pluginsTestsScaffolded": true,
   "scriptsTestsScaffolded": true,
   "needsRestockColumnScaffolded": true,
-  "backgroundFlowScaffolded": true
+  "backgroundFlowScaffolded": true,
+  "enrichFlowScaffolded": true
 }
