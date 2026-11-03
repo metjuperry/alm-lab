@@ -42,7 +42,48 @@
               ]
             }
           },
-          "actions": {},
+          "actions": {
+            "Get_product_by_barcode": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "lab_connectorsopenfoodfacts",
+                  "operationId": "GetProductByBarcode",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/lab_connectorsopenfoodfacts"
+                },
+                "parameters": {
+                  "barcode": "@triggerOutputs()?['body/lab_ean']"
+                },
+                "authentication": "@parameters('$authentication')"
+              },
+              "runAfter": {}
+            },
+            "Update_the_product": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateOnlyRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "lab_products",
+                  "recordId": "@triggerOutputs()?['body/lab_productid']",
+                  "item/lab_name": "@coalesce(outputs('Get_product_by_barcode')?['body/name'], triggerOutputs()?['body/lab_name'])",
+                  "item/lab_brand": "@outputs('Get_product_by_barcode')?['body/brand']",
+                  "item/lab_quantity": "@outputs('Get_product_by_barcode')?['body/quantity']",
+                  "item/lab_imageurl": "@outputs('Get_product_by_barcode')?['body/imageUrl']",
+                  "item/lab_lastsyncedon": "@utcNow()"
+                },
+                "authentication": "@parameters('$authentication')"
+              },
+              "runAfter": {
+                "Get_product_by_barcode": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
           "else": {
             "actions": {}
           },
@@ -59,6 +100,15 @@
         },
         "api": {
           "name": "shared_commondataserviceforapps"
+        }
+      },
+      "lab_connectorsopenfoodfacts": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "lab_openfoodfacts"
+        },
+        "api": {
+          "name": "lab_connectorsopenfoodfacts"
         }
       }
     }
