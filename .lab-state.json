@@ -50,5 +50,6 @@
   "needsRestockColumnScaffolded": true,
   "backgroundFlowScaffolded": true,
   "enrichFlowScaffolded": true,
-  "enrichTriggerScaffolded": true
+  "enrichTriggerScaffolded": true,
+  "enrichLookupScaffolded": true
 }

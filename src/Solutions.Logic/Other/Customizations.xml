@@ -19,6 +19,16 @@
       <statecode>0</statecode>
       <statuscode>1</statuscode>
     </connectionreference>
+    <connectionreference connectionreferencelogicalname="lab_openfoodfacts">
+      <connectionreferencedisplayname>Open Food Facts</connectionreferencedisplayname>
+      <connectorid>/providers/Microsoft.PowerApps/apis/lab_connectorsopenfoodfacts</connectorid>
+      <customconnectorid>
+        <connectorid>796f58f9-aeb5-ba33-a08b-1dfba0d9062f</connectorid>
+      </customconnectorid>
+      <iscustomizable>1</iscustomizable>
+      <statecode>0</statecode>
+      <statuscode>1</statuscode>
+    </connectionreference>
   </connectionreferences>
   <Languages>
     <Language>1033</Language>
