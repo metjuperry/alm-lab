@@ -1,6 +1,5 @@
 {
   "properties": {
-    "connectionReferences": {},
     "definition": {
       "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
       "contentVersion": "1.0.0.0",
@@ -15,24 +14,54 @@
         }
       },
       "triggers": {
-        "manual": {
-          "metadata": {
-            "operationMetadataId": "3a566551-d0c3-41e9-aafb-3e5f0db49ad9"
-          },
-          "type": "Request",
-          "kind": "Button",
+        "When_a_product_is_added": {
+          "type": "OpenApiConnectionWebhook",
           "inputs": {
-            "schema": {
-              "type": "object",
-              "properties": {},
-              "required": []
-            }
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 1,
+              "subscriptionRequest/entityname": "lab_product",
+              "subscriptionRequest/scope": 4
+            },
+            "authentication": "@parameters('$authentication')"
           }
         }
       },
-      "actions": {}
+      "actions": {
+        "Has_barcode": {
+          "type": "If",
+          "expression": {
+            "not": {
+              "equals": [
+                "@coalesce(triggerOutputs()?['body/lab_ean'], '')",
+                ""
+              ]
+            }
+          },
+          "actions": {},
+          "else": {
+            "actions": {}
+          },
+          "runAfter": {}
+        }
+      }
     },
-    "templateName": null
+    "templateName": null,
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "lab_sharedcommondataserviceforapps"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    }
   },
   "schemaVersion": "1.0.0.0"
 }

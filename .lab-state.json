@@ -49,5 +49,6 @@
   "scriptsTestsScaffolded": true,
   "needsRestockColumnScaffolded": true,
   "backgroundFlowScaffolded": true,
-  "enrichFlowScaffolded": true
+  "enrichFlowScaffolded": true,
+  "enrichTriggerScaffolded": true
 }

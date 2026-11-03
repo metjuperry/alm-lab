@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-11-03T17:14:49.9254504+00:00",
+  "operation": {
+    "connector": "shared_commondataserviceforapps",
+    "apiId": "shared_commondataserviceforapps",
+    "operationId": "UpdateOnlyRecord",
+    "summary": "Update a row",
+    "description": "This action allows you to modify any selected row in a Microsoft Dataverse table. This connector was formerly known as Common Data Service (current environment).",
+    "actionType": "OpenApiConnection",
+    "isDeprecated": false,
+    "parameters": [
+      {
+        "name": "x-ms-odata-metadata-full",
+        "type": "boolean",
+        "required": false,
+        "description": "Return Full Metadata"
+      },
+      {
+        "name": "entityName",
+        "type": "string",
+        "required": true,
+        "description": "Table name",
+        "dynamicValues": {
+          "operationId": "GetEntities",
+          "parameters": {},
+          "itemsPath": "value",
+          "valuePath": "EntitySetName",
+          "titlePath": "DisplayCollectionName/UserLocalizedLabel/Label"
+        }
+      },
+      {
+        "name": "recordId",
+        "type": "string",
+        "required": true,
+        "description": "Row ID"
+      },
+      {
+        "name": "item",
+        "type": "object",
+        "required": true,
+        "description": "Row Item",
+        "dynamicSchema": {
+          "operationId": "GetMetadataForPatchEntity",
+          "parameters": {
+            "entityName": "$ref:entityName"
+          },
+          "valuePath": "schema"
+        }
+      }
+    ],
+    "isTrigger": false,
+    "outputs": [
+      {
+        "name": "body",
+        "type": "object",
+        "required": false,
+        "dynamicSchema": {
+          "operationId": "GetMetadataForGetEntity",
+          "parameters": {
+            "entityName": "$ref:entityName"
+          },
+          "valuePath": "schema"
+        }
+      }
+    ]
+  }
+}
