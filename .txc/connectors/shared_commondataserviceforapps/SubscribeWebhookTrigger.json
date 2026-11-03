@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-11-03T17:14:40.652143+00:00",
+  "operation": {
+    "connector": "shared_commondataserviceforapps",
+    "apiId": "shared_commondataserviceforapps",
+    "operationId": "SubscribeWebhookTrigger",
+    "summary": "When a row is added, modified or deleted",
+    "description": "This trigger allows you to start a flow when a row is added, modified or deleted in a Microsoft Dataverse table, such that it matches the selected options. This connector was formerly known as Common Data Service (current environment).",
+    "actionType": "OpenApiConnectionWebhook",
+    "isDeprecated": false,
+    "parameters": [
+      {
+        "name": "subscriptionRequest/message",
+        "type": "integer",
+        "required": true,
+        "description": "Change type",
+        "dynamicValues": {
+          "operationId": "GetOptionSetMetadata",
+          "parameters": {
+            "entityName": "callbackregistration",
+            "attributeMetadataId": "58bac6af-4394-424f-bbc8-e64843941942",
+            "type": "Picklist"
+          },
+          "itemsPath": "value",
+          "valuePath": "value",
+          "titlePath": "label/userLocalizedLabel/label"
+        }
+      },
+      {
+        "name": "subscriptionRequest/entityname",
+        "type": "string",
+        "required": true,
+        "description": "Table name",
+        "dynamicValues": {
+          "operationId": "GetEntities",
+          "parameters": {},
+          "itemsPath": "value",
+          "valuePath": "LogicalName",
+          "titlePath": "DisplayCollectionName/UserLocalizedLabel/Label"
+        }
+      },
+      {
+        "name": "subscriptionRequest/scope",
+        "type": "integer",
+        "required": true,
+        "description": "Scope",
+        "dynamicValues": {
+          "operationId": "GetScopeFilters",
+          "parameters": {
+            "entityName": "$ref:subscriptionRequest/entityname"
+          },
+          "itemsPath": "value",
+          "valuePath": "Value",
+          "titlePath": "DisplayName"
+        }
+      },
+      {
+        "name": "subscriptionRequest/filteringattributes",
+        "type": "string",
+        "required": false,
+        "description": "Select columns"
+      },
+      {
+        "name": "subscriptionRequest/filterexpression",
+        "type": "string",
+        "required": false,
+        "description": "Filter rows"
+      },
+      {
+        "name": "subscriptionRequest/postponeuntil",
+        "type": "string",
+        "required": false,
+        "description": "Delay until"
+      },
+      {
+        "name": "subscriptionRequest/runas",
+        "type": "integer",
+        "required": false,
+        "description": "Run as",
+        "dynamicValues": {
+          "operationId": "GetOptionSetMetadata",
+          "parameters": {
+            "entityName": "callbackregistration",
+            "attributeMetadataId": "8249fb1c-94a3-4e5b-9869-c1f61d7c1047",
+            "type": "Picklist"
+          },
+          "itemsPath": "value",
+          "valuePath": "value",
+          "titlePath": "label/userLocalizedLabel/label"
+        }
+      },
+      {
+        "name": "subscriptionRequest/name",
+        "type": "string",
+        "required": false,
+        "description": "Name"
+      }
+    ],
+    "isTrigger": true,
+    "outputs": [
+      {
+        "name": "body",
+        "type": "object",
+        "required": false,
+        "description": "A Table item.",
+        "dynamicSchema": {
+          "operationId": "GetMetadataForGetEntityCUDTrigger",
+          "parameters": {
+            "entityName": "$ref:subscriptionRequest/entityname"
+          },
+          "valuePath": "schema"
+        }
+      }
+    ]
+  }
+}
