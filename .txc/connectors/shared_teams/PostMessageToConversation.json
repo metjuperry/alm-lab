@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-11-03T17:24:47.180015+00:00",
+  "operation": {
+    "connector": "shared_teams",
+    "apiId": "shared_teams",
+    "operationId": "PostMessageToConversation",
+    "summary": "Post message in a chat or channel",
+    "description": "Posts a message to a chat or a channel",
+    "actionType": "OpenApiConnection",
+    "isDeprecated": false,
+    "parameters": [
+      {
+        "name": "poster",
+        "type": "string",
+        "required": true,
+        "description": "Post as",
+        "allowedValues": [
+          "Power Virtual Agents",
+          "Flow bot",
+          "User"
+        ],
+        "defaultValue": "Flow bot"
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "required": true,
+        "description": "Post in",
+        "dynamicValues": {
+          "operationId": "GetMessageLocations",
+          "parameters": {
+            "messageType": "ParentMessage",
+            "poster": "$ref:poster"
+          },
+          "itemsPath": "value",
+          "valuePath": "id",
+          "titlePath": "displayName"
+        }
+      },
+      {
+        "name": "body",
+        "type": "object",
+        "required": true,
+        "description": "Post message request",
+        "dynamicSchema": {
+          "operationId": "GetUnifiedActionSchema",
+          "parameters": {
+            "actionType": "Message",
+            "poster": "$ref:poster",
+            "recipientType": "$ref:location"
+          },
+          "valuePath": "schema"
+        }
+      }
+    ],
+    "isTrigger": false,
+    "outputs": [
+      {
+        "name": "body/id",
+        "type": "string",
+        "required": false,
+        "description": "Message ID"
+      },
+      {
+        "name": "body/messageLink",
+        "type": "string",
+        "required": false,
+        "description": "Message link"
+      },
+      {
+        "name": "body/conversationId",
+        "type": "string",
+        "required": false,
+        "description": "Conversation ID"
+      }
+    ]
+  }
+}
