@@ -51,5 +51,6 @@
   "backgroundFlowScaffolded": true,
   "enrichFlowScaffolded": true,
   "enrichTriggerScaffolded": true,
-  "enrichLookupScaffolded": true
+  "enrichLookupScaffolded": true,
+  "enrichNotifyScaffolded": true
 }

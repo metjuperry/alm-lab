@@ -82,6 +82,28 @@
                   "Succeeded"
                 ]
               }
+            },
+            "Post_in_Teams": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+                },
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Chat with Flow bot",
+                  "body/recipient": "admin@ngtraining1.onmicrosoft.com",
+                  "body/messageBody": "<p>Product <b>@{outputs('Get_product_by_barcode')?['body/name']}</b> (@{outputs('Get_product_by_barcode')?['body/brand']}) was filled in from Open Food Facts for barcode @{triggerOutputs()?['body/lab_ean']}.</p>"
+                },
+                "authentication": "@parameters('$authentication')"
+              },
+              "runAfter": {
+                "Update_the_product": [
+                  "Succeeded"
+                ]
+              }
             }
           },
           "else": {
@@ -109,6 +131,15 @@
         },
         "api": {
           "name": "lab_connectorsopenfoodfacts"
+        }
+      },
+      "shared_teams": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "lab_sharedteams"
+        },
+        "api": {
+          "name": "shared_teams"
         }
       }
     }
